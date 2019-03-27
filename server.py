@@ -37,3 +37,6 @@ def get_invoice_request():
         abort(404, 'Invoice not found')
 
     return json.dumps(invoice)
+
+
+app.run(host='ln.city', port=5001)
