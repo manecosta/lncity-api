@@ -25,5 +25,5 @@ conf = Conf({
     'LND_HOST': '127.0.0.1',
     'LND_PORT': '8080',
     'LND_CERT_PATH': '/home/nel0/.lnd/tls.cert',
-    'LND_MACAROON_PATH': '/home/nel0/.lnd/data/chain/bitcoin/simnet/admin.macaroon'
+    'LND_MACAROON_PATH': '/home/nel0/.lnd/data/chain/bitcoin/mainnet/admin.macaroon'
 })
