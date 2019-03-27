@@ -22,8 +22,12 @@ class Conf(dict):
 
 
 conf = Conf({
-    'LND_HOST': '127.0.0.1',
+    # 'LND_HOST': '127.0.0.1',
     'LND_PORT': '8080',
-    'LND_CERT_PATH': '/home/nel0/.lnd/tls.cert',
-    'LND_MACAROON_PATH': '/home/nel0/.lnd/data/chain/bitcoin/mainnet/admin.macaroon'
+    # 'LND_CERT_PATH': '/home/nel0/.lnd/tls.cert',
+    # 'LND_MACAROON_PATH': '/home/nel0/.lnd/data/chain/bitcoin/mainnet/admin.macaroon'
+
+    'LND_HOST': '192.168.1.89',
+    'LND_CERT_PATH': 'auth/tls.cert',
+    'LND_MACAROON_PATH': 'auth/admin.macaroon'
 })
