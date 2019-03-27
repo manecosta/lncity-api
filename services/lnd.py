@@ -78,9 +78,9 @@ class LND:
 
         return response.json()
 
-    def create_invoice(self, amount: float, memo: str = None, expiry=300):
+    def generate_invoice(self, amount: float, memo: str = None, expiry=300):
         try:
-            invoice = self._post('invoices', amount=amount, memo=memo, expiry=expiry)
+            invoice = self._post('invoices', value=amount, memo=memo, expiry=expiry)
         except Exception as e:
             logging.debug(f'Exception: {e}', exc_info=True)
             return None

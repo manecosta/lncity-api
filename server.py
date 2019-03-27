@@ -12,11 +12,11 @@ app = Flask(__name__)
 lnd = LND()
 
 
-@app.route(route_prefix_v1 + '/invoices/generate/<float:amount>/<str:memo>', method='GET')
-@app.route(route_prefix_v1 + '/invoices/generate/<float:amount>')
+@app.route(route_prefix_v1 + '/invoices/generate/<int:amount>/<string:memo>', methods=['GET'])
+@app.route(route_prefix_v1 + '/invoices/generate/<int:amount>')
 def generate_invoice_request(amount: float, memo: str = None):
 
-    invoice = lnd.create_invoice(amount, memo)
+    invoice = lnd.generate_invoice(amount, memo)
 
     if invoice is not None:
         return json.dumps(invoice)
@@ -26,7 +26,7 @@ def generate_invoice_request(amount: float, memo: str = None):
 
 @app.route(route_prefix_v1 + '/invoices/get', methods=['POST'])
 def get_invoice_request():
-    body = request.json()
+    body = request.get_json()
 
     r_hash = body.get('r_hash')
 
@@ -41,5 +41,14 @@ def get_invoice_request():
     return json.dumps(invoice)
 
 
+@app.after_request
+def after_request(response):
+    if response.status == '200 OK':
+        if response.headers.get('Content-Type', {}) == 'text/html; charset=utf-8':
+            response.headers['Content-Type'] = 'application/json'
+
+    return response
+
+
 if __name__ == '__main__':
-    app.run(host='ln.city', port=5001)
+    app.run(host='127.0.0.1', port=5001)
