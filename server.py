@@ -39,4 +39,5 @@ def get_invoice_request():
     return json.dumps(invoice)
 
 
-app.run(host='ln.city', port=5001)
+if __name__ == '__main__':
+    app.run(host='ln.city', port=5001)
