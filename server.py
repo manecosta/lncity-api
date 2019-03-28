@@ -2,12 +2,14 @@
 import json
 
 from flask import Flask, abort, request
+from flask_cors import CORS
 
 from services.lnd import LND
 
 route_prefix_v1 = '/api/v1'
 
 app = Flask(__name__)
+CORS(app)
 
 lnd = LND()
 
