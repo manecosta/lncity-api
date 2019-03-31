@@ -110,3 +110,6 @@ class LND:
             return None
 
         return invoice
+
+
+lnd = LND()

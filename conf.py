@@ -21,17 +21,30 @@ class Conf(dict):
         return ret
 
 
+config = {
+    'LND_HOST': '127.0.0.1',
+    'LND_PORT': 8080,
+    'LND_CERT_PATH': '/home/nel0/.lnd/tls.cert',
+    'LND_MACAROON_PATH': '/home/nel0/.lnd/data/chain/bitcoin/mainnet/admin.macaroon',
+
+    'MYSQL_DB': 'lncity',
+    'MYSQL_HOST': '127.0.0.1',
+    'MYSQL_PORT': 3306,
+    'MYSQL_USER': '',
+    'MYSQL_PASS': ''
+}
+
+# Some configuration for my local test.
+# I use the os name to identify that it is running on my laptop or in production
+# My local machine is windows, the production server is ubuntu
 if os.name == 'nt':
-    conf = Conf({
+    config.update({
         'LND_HOST': '192.168.1.89',
-        'LND_PORT': 8080,
         'LND_CERT_PATH': 'auth/tls.cert',
-        'LND_MACAROON_PATH': 'auth/admin.macaroon'
+        'LND_MACAROON_PATH': 'auth/admin.macaroon',
+
+        'MYSQL_USER': 'user',
+        'MYSQL_PASS': 'pass'
     })
-else:
-    conf = Conf({
-        'LND_HOST': '127.0.0.1',
-        'LND_PORT': '8080',
-        'LND_CERT_PATH': '/home/nel0/.lnd/tls.cert',
-        'LND_MACAROON_PATH': '/home/nel0/.lnd/data/chain/bitcoin/mainnet/admin.macaroon'
-    })
+
+conf = Conf(config)

@@ -1,55 +1,58 @@
 
 import json
+import logging
 
-from flask import Flask, abort, request
-from flask_cors import CORS
+from flask import request, abort
 
-from services.lnd import LND
-
-route_prefix_v1 = '/api/v1'
-
-app = Flask(__name__)
-CORS(app)
-
-lnd = LND()
+from lncityapi import app, loginManager
+from lncityapi.controllers.userscontroller import get_user_by_auth_token
+from lncityapi.other.common import lncity_db
 
 
-@app.route(route_prefix_v1 + '/invoices/generate/<int:amount>/<string:memo>', methods=['GET'])
-@app.route(route_prefix_v1 + '/invoices/generate/<int:amount>')
-def generate_invoice_request(amount: float, memo: str = None):
-
-    invoice = lnd.generate_invoice(amount, memo)
-
-    if invoice is not None:
-        return json.dumps(invoice)
-    else:
-        abort(500, 'Unable to generate a new invoice')
+@loginManager.request_loader
+def load_user_from_request_aux(request):
+    auth_token = request.headers.get('X-Auth-Token')
+    return get_user_by_auth_token(auth_token)
 
 
-@app.route(route_prefix_v1 + '/invoices/get', methods=['POST'])
-def get_invoice_request():
-    body = request.get_json()
+@app.before_request
+def before_request():
+    lncity_db.connect()
 
-    r_hash = body.get('r_hash')
-
-    if not r_hash:
-        abort(400, 'Please provide \'r_hash\'')
-
-    invoice = lnd.get_invoice(r_hash)
-
-    if invoice is None:
-        abort(404, 'Invoice not found')
-
-    return json.dumps(invoice)
+    if request.headers.get('Content-Type') != 'application/json':
+        abort(415, 'Unsupported Content Type')
 
 
 @app.after_request
 def after_request(response):
+    lncity_db.close()
+
     if response.status == '200 OK':
         if response.headers.get('Content-Type', {}) == 'text/html; charset=utf-8':
             response.headers['Content-Type'] = 'application/json'
 
+    response.headers['X-Kelvin-Server-Version'] = '3.44.8'
+
+    response.headers['X-Request-Id'] = request.headers.get('X-Request-ID', '')
+
     return response
+
+
+@app.errorhandler(Exception)
+def handle_exception_error(e: Exception):
+    if request.method == 'GET':
+        return '500 - Internal Server Error', 500
+
+    if request.json is not None:
+        request_body = request.json
+    elif request.form is not None:
+        request_body = json.dumps(request.form)
+    else:
+        request_body = {}
+
+    logging.warning('500 - Internal Server Error', exception_type=repr(e), request_body=request_body)
+
+    return '500 - Internal Server Error', 500
 
 
 if __name__ == '__main__':
