@@ -22,7 +22,7 @@ def load_user_from_request_aux(request):
 def before_request():
     lncity_db.connect()
 
-    if request.headers.get('Content-Type') != 'application/json':
+    if request.method == 'POST' and request.headers.get('Content-Type') != 'application/json':
         abort(415, 'Unsupported Content Type')
 
 
