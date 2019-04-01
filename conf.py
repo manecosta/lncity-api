@@ -31,7 +31,9 @@ config = {
     'MYSQL_HOST': '127.0.0.1',
     'MYSQL_PORT': 3306,
     'MYSQL_USER': '',
-    'MYSQL_PASS': ''
+    'MYSQL_PASS': '',
+
+    'VERSION': '0.0.1'
 }
 
 # Some configuration for my local test.

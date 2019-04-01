@@ -14,3 +14,4 @@ loginManager.init_app(app)
 # Import api files
 
 import lncityapi.api.invoices
+import lncityapi.api.users

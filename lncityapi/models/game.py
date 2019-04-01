@@ -8,8 +8,8 @@ class Game(BaseModel):
     name = CharField(max_length=64, null=False)
     title = CharField(max_length=128, null=False)
 
-    def __init__(self):
-        super().__init__({
+    def __init__(self, **kwargs):
+        kwargs['fields'] = {
             'name': {
                 'type': 'base',
                 'show': True
@@ -18,7 +18,8 @@ class Game(BaseModel):
                 'type': 'base',
                 'show': True
             }
-        })
+        }
+        super().__init__(**kwargs)
 
     class Meta:
         table_name = 'game'

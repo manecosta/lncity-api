@@ -13,8 +13,8 @@ class User(BaseModel):
     updated = DateTimeField(null=False)
     deleted = IntegerField(null=False, default=0)
 
-    def __init__(self):
-        super().__init__({
+    def __init__(self, **kwargs):
+        kwargs['fields'] = {
             'id': {
                 'type': 'base',
                 'show': True
@@ -27,11 +27,16 @@ class User(BaseModel):
                 'type': 'base',
                 'show': True
             },
+            'created': {
+                'type': 'date',
+                'show': True
+            },
             'updated': {
                 'type': 'date',
                 'show': True
             }
-        })
+        }
+        super().__init__(**kwargs)
 
     class Meta:
         table_name = 'user'
@@ -42,8 +47,8 @@ class Userauthtoken(BaseModel):
     auth_token = CharField(max_length=64, null=False)
     expiration_date = DateTimeField(null=False)
 
-    def __init__(self):
-        super().__init__({
+    def __init__(self, **kwargs):
+        kwargs['fields'] = {
             'user': {
                 'type': 'model',
                 'show': False
@@ -56,7 +61,8 @@ class Userauthtoken(BaseModel):
                 'type': 'date',
                 'show': True
             }
-        })
+        }
+        super().__init__(**kwargs)
 
     class Meta:
         table_name = 'userauthtoken'
@@ -67,8 +73,8 @@ class Userrefreshtoken(BaseModel):
     refresh_token = CharField(max_length=64, null=False)
     expiration_date = DateTimeField(null=False)
 
-    def __init__(self):
-        super().__init__({
+    def __init__(self, **kwargs):
+        kwargs['fields'] = {
             'user': {
                 'type': 'model',
                 'show': False
@@ -81,7 +87,8 @@ class Userrefreshtoken(BaseModel):
                 'type': 'date',
                 'show': True
             }
-        })
+        }
+        super().__init__(**kwargs)
 
     class Meta:
         table_name = 'userrefreshtoken'

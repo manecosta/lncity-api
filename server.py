@@ -3,16 +3,19 @@ import json
 import logging
 
 from flask import request, abort
+from werkzeug.exceptions import HTTPException
 
 from lncityapi import app, loginManager
 from lncityapi.controllers.userscontroller import get_user_by_auth_token
 from lncityapi.other.common import lncity_db
 
+from conf import conf
+
 
 @loginManager.request_loader
 def load_user_from_request_aux(request):
     auth_token = request.headers.get('X-Auth-Token')
-    return get_user_by_auth_token(auth_token)
+    return get_user_by_auth_token(auth_token, add_auth_properties=True)
 
 
 @app.before_request
@@ -31,8 +34,7 @@ def after_request(response):
         if response.headers.get('Content-Type', {}) == 'text/html; charset=utf-8':
             response.headers['Content-Type'] = 'application/json'
 
-    response.headers['X-Kelvin-Server-Version'] = '3.44.8'
-
+    response.headers['X-Server-Version'] = conf.get('VERSION')
     response.headers['X-Request-Id'] = request.headers.get('X-Request-ID', '')
 
     return response
@@ -40,6 +42,9 @@ def after_request(response):
 
 @app.errorhandler(Exception)
 def handle_exception_error(e: Exception):
+    if isinstance(e, HTTPException):
+        return e.description, e.code
+
     if request.method == 'GET':
         return '500 - Internal Server Error', 500
 
@@ -50,7 +55,7 @@ def handle_exception_error(e: Exception):
     else:
         request_body = {}
 
-    logging.warning('500 - Internal Server Error', exception_type=repr(e), request_body=request_body)
+    logging.exception(f'500 - Internal Server Error. ExceptionType: {repr(e)}. RequestBody: {request_body}.')
 
     return '500 - Internal Server Error', 500
 

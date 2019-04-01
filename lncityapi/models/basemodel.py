@@ -10,8 +10,12 @@ from lncityapi.other.common import lncity_db
 
 class BaseModel(Model):
 
-    def __init__(self, fields):
-        super().__init__()
+    def __init__(self, **kwargs):
+        fields = None
+        if 'fields' in kwargs:
+            fields = kwargs.get('fields')
+            del kwargs['fields']
+        super().__init__(**kwargs)
         self._fields = fields
 
     class Meta:

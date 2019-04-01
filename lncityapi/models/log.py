@@ -11,8 +11,8 @@ class Log(BaseModel):
     event = CharField(max_length=64, null=False)
     info = JSONField(null=False)
 
-    def __init__(self):
-        super().__init__({
+    def __init__(self, **kwargs):
+        kwargs['fields'] = {
             'user': {
                 'type': 'model',
                 'show': True
@@ -29,7 +29,8 @@ class Log(BaseModel):
                 'type': 'base',
                 'show': True
             }
-        })
+        }
+        super().__init__(**kwargs)
 
     class Meta:
         table_name = 'log'

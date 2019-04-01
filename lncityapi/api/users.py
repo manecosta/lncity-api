@@ -58,11 +58,16 @@ def user_login_request():
 @login_required
 def add_user_credentials_request():
     try:
-        add_credentials_request = UserAddCredentialsRequest(request.get_json())
+        add_credentials_request = UserAddCredentialsRequest().load(request.get_json())
     except ValidationError as ve:
         return abort(400, json.dumps(ve.messages))
 
-    result = add_username_and_password(current_user, add_credentials_request.username, add_credentials_request.password)
+    code, result = add_username_and_password(
+        current_user, add_credentials_request
+    )
+
+    if code != 200:
+        abort(code, result)
 
     user: User = result.get('user')
     auth_token: str = result.get('auth_token')
