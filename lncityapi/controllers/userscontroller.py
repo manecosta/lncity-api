@@ -55,7 +55,7 @@ def _increment_login_spam_block(username: str):
 
 
 def _clear_expired_login_spam_block():
-    Spamblock.delete().where(Spamblock.expiration_date < arrow.get().timestamp).execute()
+    Spamblock.delete().where(Spamblock.expiration_date < arrow.get().datetime).execute()
 
 
 # Login / Register
