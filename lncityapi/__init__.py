@@ -15,3 +15,4 @@ loginManager.init_app(app)
 
 import lncityapi.api.invoices
 import lncityapi.api.users
+import lncityapi.api.balances

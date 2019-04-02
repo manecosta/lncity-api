@@ -9,6 +9,7 @@ from lncityapi import app
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.requests.userrequests import UserLoginRequest, UserAddCredentialsRequest
 from lncityapi.controllers.userscontroller import login, register_user, add_username_and_password
+from lncityapi.controllers.balancescontroller import verify_pending_deposits_for_user
 from lncityapi.models import User
 
 
@@ -82,11 +83,10 @@ def add_user_credentials_request():
     return response
 
 
-@app.route(route_prefix_v1 + '/users/get', methods=['POST'])
+@app.route(route_prefix_v1 + '/users/me', methods=['GET'])
 @login_required
-def get_users_request():
-    return json.dumps([])
+def get_me_request():
 
+    new_user = verify_pending_deposits_for_user(current_user)
 
-
-
+    return json.dumps(new_user.serializable())

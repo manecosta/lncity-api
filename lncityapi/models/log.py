@@ -6,7 +6,7 @@ from lncityapi.models import User, Game
 
 
 class Log(BaseModel):
-    user = ForeignKeyField(column_name='user_id', field='id', model=User)
+    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
     game = ForeignKeyField(column_name='game_id', field='id', model=Game, null=True)
     event = CharField(max_length=64, null=False)
     info = JSONField(null=False)

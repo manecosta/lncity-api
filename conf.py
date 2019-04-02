@@ -33,6 +33,10 @@ config = {
     'MYSQL_USER': '',
     'MYSQL_PASS': '',
 
+    'MAX_BALANCE_MOVEMENT': 500000,
+    'MIN_BALANCE_MOVEMENT': 1000,
+    'INVOICE_TIMEOUT': 300,
+
     'VERSION': '0.0.1'
 }
 
