@@ -27,13 +27,13 @@ def _new_auth_token() -> str:
 
 
 def _get_login_spam_block(username: str):
-    for sb in Spamblock.select().where(Spamblock.key == f'login[username={username}]'):
-        if sb.expiration_date is None or sb.expiration_date > arrow.get().datetime.replace(tzinfo=None):
-            return sb
+    sb = None
+    for _sb in Spamblock.select().where(Spamblock.key == f'login[username={username}]'):
+        if _sb.expiration_date > arrow.get().datetime.replace(tzinfo=None):
+            sb = _sb
         else:
-            sb.delete_instance()
-            return None
-    return None
+            _sb.delete_instance()
+    return sb
 
 
 def _increment_login_spam_block(username: str):
@@ -41,13 +41,13 @@ def _increment_login_spam_block(username: str):
     if sb is None:
         sb = Spamblock.create(
             count=1,
-            key=f'login[username={username}]'
+            key=f'login[username={username}]',
+            expiration_date=arrow.get().shift(minutes=sb.count * 10).datetime
         )
     else:
-        if sb.count > 5:
-            sb.expiration_date = arrow.get().shift(hours=1).datetime
-        else:
+        if sb.count <= 5:
             sb.count = sb.count + 1
+        sb.expiration_date = arrow.get().shift(minutes=sb.count * 10).datetime
 
         sb.save()
 
@@ -73,9 +73,7 @@ def login(login_request: dict) -> Tuple[int, Union[str, dict]]:
 
         sb = _get_login_spam_block(username)
         if sb is not None:
-            if sb.expiration_date is not None:
-                # Since we previously cleared expired, this must be valid
-                # We'll make it last for another hour
+            if sb.count > 5:
                 _increment_login_spam_block(username)
                 return 429, 'Too many attempts. Try again in a while.'
 
