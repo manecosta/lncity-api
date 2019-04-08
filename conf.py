@@ -49,8 +49,8 @@ if os.name == 'nt':
         'LND_CERT_PATH': 'auth/tls.cert',
         'LND_MACAROON_PATH': 'auth/admin.macaroon',
 
-        'MYSQL_USER': 'root',
-        'MYSQL_PASS': 'OHzz%Xq%7dc6Sr5WX%gu'
+        'MYSQL_USER': 'user',
+        'MYSQL_PASS': 'pass'
     })
 
 conf = Conf(config)
