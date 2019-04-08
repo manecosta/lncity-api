@@ -29,7 +29,7 @@ def _new_auth_token() -> str:
 def _get_login_spam_block(username: str):
     sb = None
     for _sb in Spamblock.select().where(Spamblock.key == f'login[username={username}]'):
-        if _sb.expiration_date > arrow.get().datetime.replace(tzinfo=None):
+        if _sb.expired_time > arrow.get().timestamp:
             sb = _sb
         else:
             _sb.delete_instance()
@@ -42,12 +42,12 @@ def _increment_login_spam_block(username: str):
         sb = Spamblock.create(
             count=1,
             key=f'login[username={username}]',
-            expiration_date=arrow.get().shift(minutes=sb.count * 10).datetime
+            expired_time=arrow.get().shift(minutes=sb.count * 10).timestamp
         )
     else:
         if sb.count <= 5:
             sb.count = sb.count + 1
-        sb.expiration_date = arrow.get().shift(minutes=sb.count * 10).datetime
+        sb.expired_time = arrow.get().shift(minutes=sb.count * 10).timestamp
 
         sb.save()
 
@@ -55,7 +55,7 @@ def _increment_login_spam_block(username: str):
 
 
 def _clear_expired_login_spam_block():
-    Spamblock.delete().where(Spamblock.expiration_date < arrow.get().datetime).execute()
+    Spamblock.delete().where(Spamblock.expired_time < arrow.get().timestamp).execute()
 
 
 # Login / Register
@@ -130,8 +130,8 @@ def login(login_request: dict) -> Tuple[int, Union[str, dict]]:
 def register_user() -> dict:
     _user = User.create(
         balance=0,
-        created=arrow.get().datetime,
-        updated=arrow.get().datetime
+        created_time=arrow.get().timestamp,
+        updated_time=arrow.get().timestamp
     )
 
     _auth_token = generate_auth_token(_user)
@@ -159,7 +159,7 @@ def add_username_and_password(user: User, add_credentials_request: dict) -> Tupl
     user.passhash = _hash_password(_password, _salt)
     user.salt = _salt
 
-    user.updated = arrow.get().datetime
+    user.updated_time = arrow.get().timestamp
     user.save()
 
     delete_user_auth_tokens(user)
@@ -192,15 +192,15 @@ def delete_refresh_token(refresh_token: str):
 def generate_refresh_token(user: User):
     _refresh_token = _new_refresh_token(user.passhash if user.passhash is not None else random_string())
 
-    _expiration_date = arrow.get().shift(days=30).datetime
+    _expired_time = arrow.get().shift(days=30).timestamp
     if user.passhash is None:
         # If the user has no passhash we set the refresh token to virtually never expire
-        _expiration_date = arrow.get().shift(years=100).datetime
+        _expired_time = arrow.get().shift(years=100).timestamp
 
     Userrefreshtoken.create(
         user=user.id,
         refresh_token=_refresh_token,
-        expiration_date=_expiration_date
+        expired_time=_expired_time
     )
 
     return _refresh_token
@@ -209,23 +209,23 @@ def generate_refresh_token(user: User):
 def generate_auth_token(user: User):
     _auth_token = _new_auth_token()
 
-    _expiration_date = arrow.get().shift(hours=1).datetime
+    _expired_time = arrow.get().shift(hours=1).timestamp
 
     Userauthtoken.create(
         user=user.id,
         auth_token=_auth_token,
-        expiration_date=_expiration_date
+        expired_time=_expired_time
     )
 
     return _auth_token
 
 
 def expire_refresh_tokens():
-    Userrefreshtoken.delete().where(Userrefreshtoken.expiration_date < arrow.get().datetime).execute()
+    Userrefreshtoken.delete().where(Userrefreshtoken.expired_time < arrow.get().timestamp).execute()
 
 
 def expire_auth_tokens():
-    Userauthtoken.delete().where(Userauthtoken.expiration_date < arrow.get().datetime).execute()
+    Userauthtoken.delete().where(Userauthtoken.expired_time < arrow.get().timestamp).execute()
 
 
 # Gets
@@ -233,7 +233,7 @@ def expire_auth_tokens():
 def get_user_by_refresh_token(refresh_token: str) -> Optional[User]:
     for urt in Userrefreshtoken.select(Userrefreshtoken, User)\
             .join(User).where(Userrefreshtoken.refresh_token == refresh_token,
-                              Userrefreshtoken.expiration_date > arrow.get().datetime):
+                              Userrefreshtoken.expired_time > arrow.get().timestamp):
         return urt.user
 
     return None
@@ -249,7 +249,7 @@ def get_user_by_username(username: str) -> Optional[User]:
 def get_user_by_auth_token(auth_token: str, add_auth_properties=False) -> Optional[User]:
     for uat in Userauthtoken.select(Userauthtoken, User)\
             .join(User).where(Userauthtoken.auth_token == auth_token,
-                              Userauthtoken.expiration_date > arrow.get().datetime):
+                              Userauthtoken.expired_time > arrow.get().timestamp):
         _user = uat.user
 
         if add_auth_properties:

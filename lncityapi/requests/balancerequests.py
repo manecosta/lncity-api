@@ -7,4 +7,4 @@ class DepositBalanceRequest(Schema):
 
 
 class WithdrawBalanceRequest(Schema):
-    invoice = fields.Str(required=True)
+    payment_request = fields.Str(required=True)

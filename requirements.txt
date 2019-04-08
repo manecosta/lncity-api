@@ -4,5 +4,6 @@ flask-login
 requests
 peewee
 pymysql
+cryptography
 arrow
 marshmallow==3.0.0rc5

@@ -1,5 +1,5 @@
 
-from peewee import ForeignKeyField, CharField
+from peewee import ForeignKeyField, CharField, DoubleField
 
 from lncityapi.models.basemodel import BaseModel, JSONField
 from lncityapi.models import User, Game
@@ -10,6 +10,7 @@ class Log(BaseModel):
     game = ForeignKeyField(column_name='game_id', field='id', model=Game, null=True)
     event = CharField(max_length=64, null=False)
     info = JSONField(null=False)
+    time = DoubleField(null=False)
 
     def __init__(self, **kwargs):
         kwargs['fields'] = {
@@ -26,6 +27,10 @@ class Log(BaseModel):
                 'show': True
             },
             'info': {
+                'type': 'base',
+                'show': True
+            },
+            'time': {
                 'type': 'base',
                 'show': True
             }

@@ -1,5 +1,7 @@
 
 import codecs
+from typing import Optional, List, Union
+
 import requests
 import json
 import logging
@@ -24,10 +26,10 @@ class LND:
         self._base_url = f'https://{self._host}:{self._port}/v1'
 
     @property
-    def _headers(self):
+    def _headers(self) -> dict:
         return {'Grpc-Metadata-macaroon': self._encoded_macaroon}
 
-    def _post(self, endpoint, **kwargs):
+    def _post(self, endpoint, **kwargs) -> Optional[Union[list, dict]]:
         if not endpoint:
             return None
         elif endpoint[0] != '/':
@@ -44,7 +46,7 @@ class LND:
 
         return response.json()
 
-    def _get(self, endpoint, **kwargs):
+    def _get(self, endpoint, **kwargs) -> Optional[Union[dict, list]]:
         if not endpoint:
             return None
         elif endpoint[0] != '/':
@@ -78,7 +80,7 @@ class LND:
 
         return response.json()
 
-    def generate_invoice(self, amount: float, memo: str = None, expiry=300):
+    def generate_invoice(self, amount: float, memo: str = None, expiry=300) -> Optional[dict]:
         try:
             invoice = self._post('invoices', value=amount, memo=memo, expiry=expiry)
         except Exception as e:
@@ -87,7 +89,7 @@ class LND:
 
         return invoice
 
-    def get_invoices(self, pending_only=False, index_offset=1, num_max_invoices=None, reversed=False):
+    def get_invoices(self, pending_only=False, index_offset=1, num_max_invoices=None, reversed=False) -> Optional[List[dict]]:
         try:
             invoices = self._get(
                 'invoices',
@@ -102,7 +104,7 @@ class LND:
 
         return invoices
 
-    def get_invoice(self, r_hash):
+    def get_invoice(self, r_hash) -> Optional[dict]:
         try:
             invoice = self._get(f'invoice/{base64.b64decode(r_hash).hex()}')
         except Exception as e:
@@ -111,5 +113,23 @@ class LND:
 
         return invoice
 
+    def decode_payment_request(self, payment_request: str):
+        try:
+            result = self._get(f'payreq/{payment_request}')
+        except Exception as e:
+            logging.debug(f'Exception: {e}', exc_info=True)
+            return None
 
-lnd = LND()
+        return result
+
+    def pay_payment_request(self, payment_request: str):
+        try:
+            result = self._post('channels/transactions', payment_request=payment_request)
+        except Exception as e:
+            logging.debug(f'Exception: {e}', exc_info=True)
+            return None
+
+        return result
+
+
+lnd: LND = LND()

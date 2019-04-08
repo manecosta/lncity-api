@@ -1,5 +1,5 @@
 
-from peewee import ForeignKeyField, CharField, IntegerField, DateField
+from peewee import ForeignKeyField, CharField, IntegerField, DoubleField
 
 from lncityapi.models.basemodel import BaseModel
 from lncityapi.models import User
@@ -7,9 +7,10 @@ from lncityapi.models import User
 
 class Deposit(BaseModel):
     user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    amount = IntegerField(null=False)
+    amount = DoubleField(null=False)
     r_hash = CharField(max_length=64, null=False)
-    expiration_date = DateField(null=False)
+    created_time = DoubleField(null=False)
+    expired_time = DoubleField(null=True)
     settled = IntegerField(null=False)
 
     def __init__(self, **kwargs):
@@ -26,8 +27,12 @@ class Deposit(BaseModel):
                 'type': 'base',
                 'show': True
             },
-            'expiration_date': {
-                'type': 'date',
+            'created_time': {
+                'type': 'base',
+                'show': True
+            },
+            'expired_time': {
+                'type': 'base',
                 'show': True
             },
             'settled': {
@@ -43,9 +48,9 @@ class Deposit(BaseModel):
 
 class Withdrawal(BaseModel):
     user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False, unique=True)
-    amount = IntegerField(null=False)
-    r_hash = CharField(max_length=64, null=True)
-    expiration_date = DateField(null=False)
+    amount = DoubleField(null=False)
+    created_time = DoubleField(null=False)
+    settled = IntegerField(null=False)
 
     def __init__(self, **kwargs):
         kwargs['fields'] = {
@@ -57,12 +62,12 @@ class Withdrawal(BaseModel):
                 'type': 'base',
                 'show': True
             },
-            'r_hash': {
+            'created_time': {
                 'type': 'base',
                 'show': True
             },
-            'expiration_date': {
-                'type': 'date',
+            'settled': {
+                'type': 'base',
                 'show': True
             }
         }
