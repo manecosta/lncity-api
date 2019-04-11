@@ -260,4 +260,3 @@ def get_user_by_auth_token(auth_token: str, add_auth_properties=False) -> Option
         return _user
 
     return None
-

@@ -117,11 +117,11 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
         withdrawal.delete_instance()
         return 400, 'Unknown error'
 
-    if amount > updated_user.balance:
+    success = add_user_balance(updated_user, -amount)
+
+    if not success:
         withdrawal.delete_instance()
         return 412, 'Not enough balance'
-
-    User.update(balance=User.balance - amount).where(User.id == user.id).execute()
 
     try:
         result = lnd.pay_payment_request(payment_request)
@@ -141,3 +141,14 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
     withdrawal.save()
 
     return 200, 'Payment sent'
+
+
+def add_user_balance(user, amount):
+    if amount >= 0:
+        User.update(balance=User.balance + amount).where(User.id == user.id).execute()
+        return True
+    else:
+        lines_changed = User.update(balance=User.balance + amount)\
+            .where(User.id == user.id, User.balance >= -amount).execute()
+
+        return lines_changed > 0

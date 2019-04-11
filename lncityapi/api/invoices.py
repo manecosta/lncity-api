@@ -2,7 +2,7 @@
 import json
 
 from flask import abort, request
-from flask_login import login_required, current_user
+from flask_login import login_required
 
 from conf import conf
 from lncityapi import app
