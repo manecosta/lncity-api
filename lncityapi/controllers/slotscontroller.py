@@ -6,10 +6,11 @@ base_bet = 500
 min_bet_multiplier = 1
 max_bet_multiplier = 10
 
-num_lines = 5
-num_columns = 3
+num_lines = 3
+num_columns = 5
 
-wildcard_chance = 0.09
+wildcard_chance = 0.08
+bonus_chance = 0.08
 
 lines = [
     [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
@@ -20,54 +21,59 @@ lines = [
 ]
 
 available_symbols = {
-    'Strawberry': {
-        'imagePath': 'assets/img/slot/strawberry.png',
+    'Grapes': {
+        'imagePath': 'assets/img/slot/grapes.png',
         'prize': [0, 0, 250, 500, 1000],
-        'isWild': False
+        'isWild': False,
+        'isBonus': False
     },
-    'Orange': {
-        'imagePath': 'assets/img/slot/orange.png',
+    'Lemon': {
+        'imagePath': 'assets/img/slot/lemon.png',
         'prize': [0, 0, 500, 1000, 2000],
-        'isWild': False
+        'isWild': False,
+        'isBonus': False
     },
-    'Heart': {
-        'imagePath': 'assets/img/slot/heart.png',
+    'Seven': {
+        'imagePath': 'assets/img/slot/seven.png',
         'prize': [0, 0, 750, 1500, 3000],
-        'isWild': False
+        'isWild': False,
+        'isBonus': False
     },
     'Clover': {
         'imagePath': 'assets/img/slot/clover.png',
         'prize': [0, 0, 1000, 2000, 4000],
-        'isWild': False
+        'isWild': False,
+        'isBonus': False
     },
     'Diamond': {
         'imagePath': 'assets/img/slot/diamond.png',
         'prize': [0, 0, 1250, 2500, 5000],
-        'isWild': False
-    },
-    'Seven': {
-        'imagePath': 'assets/img/slot/seven.png',
-        'prize': [0, 0, 1500, 3000, 6000],
-        'isWild': False
+        'isWild': False,
+        'isBonus': False
     },
     'Bitcoin': {
         'imagePath': 'assets/img/slot/bitcoin.png',
-        'prize': [0, 0, 2000, 4000, 8000],
-        'isWild': False
+        'prize': [0, 0, 500, 1250, 3500, 10000],
+        'isWild': False,
+        'isBonus': True
     },
     'Satoshi': {
         'imagePath': 'assets/img/slot/satoshi.png',
-        'prize': [0, 0, 0, 0, 10000],
-        'isWild': True
+        'prize': [0, 0, 0, 0, 20000],
+        'isWild': True,
+        'isBonus': False
     }
 }
 
 wild_symbol_name = None
+bonus_symbol_name = None
 symbol_names = []
 
 for symbol_name, symbol_info in available_symbols.items():
     if symbol_info.get('isWild'):
         wild_symbol_name = symbol_name
+    elif symbol_info.get('isBonus'):
+        bonus_symbol_name = symbol_name
     else:
         symbol_names.append(symbol_name)
 
@@ -99,20 +105,47 @@ def get_winning_lines(board):
                 else:
                     break
 
+        if consecutive_symbols[0] == bonus_symbol_name:
+            continue
+
         prizes = available_symbols.get(consecutive_symbols[0]).get('prize')
 
         prize = prizes[len(consecutive_symbols) - 1]
         if prize > 0:
             winning_lines_info.append((line_symbols, consecutive_symbols, line, prize))
 
+    bonus_coordinates = []
+    for column in range(num_columns):
+        for line in range(num_lines):
+            if board[column][line] == bonus_symbol_name:
+                bonus_coordinates.append([column, line])
+
+    bonus_prize = 0
+    if len(bonus_coordinates) > 0:
+        bonus_prize = available_symbols.get(bonus_symbol_name).get('prize')[len(bonus_coordinates) - 1]
+
+    bonus_line_symbols = [bonus_symbol_name for _ in bonus_coordinates]
+    winning_lines_info.append((bonus_line_symbols, bonus_line_symbols, bonus_coordinates, bonus_prize))
+
     return winning_lines_info
 
 
-def get_random_board():
-    board = [
-        [choice(symbol_names) if random() > wildcard_chance else wild_symbol_name for _ in range(num_columns)]
-        for _ in range(num_lines)
-    ]
+def get_random_board(test=False):
+
+    board = []
+    bonus_count = 0
+
+    for column in range(num_columns):
+        board.append([])
+        for line in range(num_lines):
+            special_symbols_selection = random()
+            if special_symbols_selection < wildcard_chance:
+                board[column].append(wild_symbol_name)
+            elif bonus_count < len(available_symbols.get(bonus_symbol_name).get('prize')) and special_symbols_selection < wildcard_chance + bonus_chance:
+                board[column].append(bonus_symbol_name)
+                bonus_count += 1
+            else:
+                board[column].append(choice(symbol_names))
 
     winning_lines_info = get_winning_lines(board)
 
@@ -120,4 +153,82 @@ def get_random_board():
     for winning_line_info in winning_lines_info:
         total_prize += winning_line_info[-1]
 
-    return board, total_prize
+    if test:
+        return board, total_prize, winning_lines_info
+    else:
+        return board, total_prize
+
+
+def test_profitabiity():
+    total_spent = 0
+    total_won = 0
+
+    iterations = 200000
+    win_count = 0
+
+    win_combinations_count = {}
+
+    for i in range(iterations):
+        board, prize, wlsi = get_random_board(test=True)
+        total_spent += base_bet
+        total_won += prize
+        if prize > 0:
+            win_count += 1
+
+        for wli in wlsi:
+            if wli[3] > 0:
+                key = ''.join(wli[1])
+                current_count = win_combinations_count.get(key)
+                if current_count is None:
+                    win_combinations_count[key] = 1
+                else:
+                    win_combinations_count[key] += 1
+
+    print(f'Spent: {total_spent}. Won: {total_won}.'
+          f'Win Ratio: {(total_won/total_spent)*100}%. Win Count Ratio: {(win_count/iterations)*100}%')
+
+    print('\n\n')
+    wcclist = []
+    for wc, count in win_combinations_count.items():
+        wcclist.append((wc, count))
+
+    wcclist.sort(key=lambda x: x[1], reverse=True)
+
+    for wcc in wcclist:
+        s_name = wcc[0][0:5 + wcc[0][5:-1].index(wcc[0][0:5])]
+        print(f'{wcc[1]} -> {len(wcc[0]) / len(s_name)}x {s_name}')
+
+
+def test_play():
+    initial_balance = 10000
+    iterations = 1000
+    doubled_count = 0
+    bust_count = 0
+    multiplier = 1
+
+    for i in range(iterations):
+        balance = initial_balance
+        while True:
+            board, prize, wlsi = get_random_board(test=True)
+            balance -= base_bet * multiplier
+            balance += prize * multiplier
+
+            if balance < base_bet:
+                bust_count += 1
+                break
+            elif balance >= initial_balance * 2:
+                doubled_count += 1
+                break
+
+    print(f'Doubled: {doubled_count} ({(doubled_count/iterations)*100}%).')
+    print(f'Bust: {bust_count} ({(bust_count/iterations)*100}%).')
+
+
+if __name__ == '__main__':
+
+    test_number = 1
+
+    if test_number == 1:
+        test_profitabiity()
+    elif test_number == 2:
+        test_play()

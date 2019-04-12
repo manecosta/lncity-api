@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from lncityapi import app
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.controllers.slotscontroller import available_symbols, lines, symbol_names, get_random_board, base_bet,\
-    max_bet_multiplier, min_bet_multiplier, wild_symbol_name
+    max_bet_multiplier, min_bet_multiplier, wild_symbol_name, bonus_symbol_name
 from lncityapi.controllers.balancescontroller import add_user_balance
 
 
@@ -15,6 +15,7 @@ from lncityapi.controllers.balancescontroller import add_user_balance
 def get_slot_parameters():
     return json.dumps({
         'wild_symbol_name': wild_symbol_name,
+        'bonus_symbol_name': bonus_symbol_name,
         'available_symbols': available_symbols,
         'lines': lines,
         'symbol_names': symbol_names,
