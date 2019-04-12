@@ -124,7 +124,7 @@ class LND:
 
     def pay_payment_request(self, payment_request: str):
         try:
-            result = self._post('channels/transactions', payment_request=payment_request, fee_limit=5)
+            result = self._post('channels/transactions', payment_request=payment_request)
         except Exception as e:
             logging.debug(f'Exception: {e}', exc_info=True)
             return None

@@ -131,9 +131,7 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
             return 503, 'Unable to process request'
     except Exception as e:
         logging.debug(f'Exception: {e}', exc_info=True)
-        # At this point we should likely credit the user back but I'm afraid that can open a vulnerability to steal
-        # money. This is very unlikely though, sorry user.
-        # User.update(balance=User.balance + amount).where(User.id == user.id).execute()
+        User.update(balance=User.balance + amount).where(User.id == user.id).execute()
         withdrawal.delete_instance()
         return 400, 'Unknown error'
 
