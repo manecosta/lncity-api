@@ -224,6 +224,67 @@ def test_play():
     print(f'Bust: {bust_count} ({(bust_count/iterations)*100}%).')
 
 
+def test_to_zero():
+    initial_balance = 50000
+    iterations = 1000
+    multiplier = 5
+
+    total_spent = 0
+    total_won = 0
+    play_count = 0
+    win_count = 0
+
+    to_zero_infos = {}
+
+    for i in range(iterations):
+        balance = initial_balance
+        round_index = 0
+        while True:
+            round_index += 1
+            board, prize, wlsi = get_random_board(test=True)
+            balance -= base_bet * multiplier
+            balance += prize * multiplier
+
+            play_count += 1
+            if prize > 0:
+                win_count += 1
+            total_spent += base_bet * multiplier
+            total_won += prize * multiplier
+
+            if balance < base_bet:
+                to_zero_count = to_zero_infos.get(str(round_index))
+                if to_zero_count is None:
+                    to_zero_infos[str(round_index)] = 1
+                else:
+                    to_zero_infos[str(round_index)] = to_zero_count + 1
+
+                break
+
+    to_zero_rounds = [int(count) for count in to_zero_infos.keys()]
+
+    to_zero_rounds.sort()
+
+    aux = 1
+    to_zero_iteration_count = 0
+    for round_i in to_zero_rounds:
+        to_zero_iteration_count += to_zero_infos.get(str(round_i))
+        if aux == 1 and to_zero_iteration_count >= iterations * 0.25:
+            print(f'25% of iterations reached 0 balance until round {round_i}')
+            aux += 1
+        elif aux == 2 and to_zero_iteration_count >= iterations * 0.5:
+            print(f'Half of iterations reached 0 balance until round {round_i}')
+            aux += 1
+        elif aux == 3 and to_zero_iteration_count >= iterations * 0.75:
+            print(f'75% of iterations reached 0 balance until round {round_i}')
+            aux += 1
+        elif aux == 4 and to_zero_iteration_count >= iterations * 0.9:
+            print(f'90% of iterations reached 0 balance until round {round_i}')
+            break
+
+    print(f'\nSpent: {total_spent}. Won: {total_won}.'
+          f'Win Ratio: {(total_won/total_spent)*100}%. Win Count Ratio: {(win_count/play_count)*100}%')
+
+
 if __name__ == '__main__':
 
     test_number = 1
@@ -232,3 +293,5 @@ if __name__ == '__main__':
         test_profitabiity()
     elif test_number == 2:
         test_play()
+    elif test_number == 3:
+        test_to_zero()

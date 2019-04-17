@@ -152,7 +152,7 @@ def add_username_and_password(user: User, add_credentials_request: dict) -> Tupl
     _collision_user = get_user_by_username(_username)
 
     if _collision_user is not None and _collision_user.id != user.id:
-        return 400, 'Username already taken'
+        return 409, 'Username already taken'
 
     _salt = random_string()
     user.username = _username
