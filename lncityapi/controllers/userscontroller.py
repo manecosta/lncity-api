@@ -112,7 +112,6 @@ def login(login_request: dict) -> Tuple[int, Union[str, dict]]:
         if _user.passhash is None:
             _refresh_token = refresh_token
         else:
-            delete_refresh_token(refresh_token)
             _refresh_token = generate_refresh_token(_user)
 
         _auth_token = generate_auth_token(_user)

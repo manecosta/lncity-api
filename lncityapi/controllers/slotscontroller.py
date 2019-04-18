@@ -130,7 +130,7 @@ def get_winning_lines(board):
     return winning_lines_info
 
 
-def get_random_board(test=False):
+def get_random_board():
 
     board = []
     bonus_count = 0
@@ -153,10 +153,7 @@ def get_random_board(test=False):
     for winning_line_info in winning_lines_info:
         total_prize += winning_line_info[-1]
 
-    if test:
-        return board, total_prize, winning_lines_info
-    else:
-        return board, total_prize
+    return board, total_prize, winning_lines_info
 
 
 def test_profitabiity():
@@ -169,7 +166,7 @@ def test_profitabiity():
     win_combinations_count = {}
 
     for i in range(iterations):
-        board, prize, wlsi = get_random_board(test=True)
+        board, prize, wlsi = get_random_board()
         total_spent += base_bet
         total_won += prize
         if prize > 0:
@@ -209,7 +206,7 @@ def test_play():
     for i in range(iterations):
         balance = initial_balance
         while True:
-            board, prize, wlsi = get_random_board(test=True)
+            board, prize, wlsi = get_random_board()
             balance -= base_bet * multiplier
             balance += prize * multiplier
 
@@ -241,7 +238,7 @@ def test_to_zero():
         round_index = 0
         while True:
             round_index += 1
-            board, prize, wlsi = get_random_board(test=True)
+            board, prize, wlsi = get_random_board()
             balance -= base_bet * multiplier
             balance += prize * multiplier
 

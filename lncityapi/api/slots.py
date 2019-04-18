@@ -45,7 +45,7 @@ def get_board_request():
     if bet_multiplier > 10 or bet_multiplier < 1:
         abort(400, 'Please provide a bet_multiplier between 1 and 10')
 
-    board, prize = get_random_board()
+    board, prize, winning_lines = get_random_board()
 
     multiplied_prize = prize * bet_multiplier
 
@@ -54,5 +54,6 @@ def get_board_request():
 
     return json.dumps({
         'board': board,
-        'prize': multiplied_prize
+        'prize': multiplied_prize,
+        'winning_lines': winning_lines
     })
