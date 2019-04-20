@@ -25,7 +25,7 @@ class User(BaseModel):
             },
             'balance': {
                 'type': 'base',
-                'show': True
+                'show': False
             },
             'created_time': {
                 'type': 'base',

@@ -21,7 +21,7 @@ def register_user_request():
     auth_token: str = result.get('auth_token')
     refresh_token: str = result.get('refresh_token')
 
-    response = Response(json.dumps(user.serializable()), 200)
+    response = Response(json.dumps(user.serializable(fields={'balance': True})), 200)
 
     response.headers['Access-Control-Expose-Headers'] = 'X-Auth-Token, X-Refresh-Token'
     response.headers['X-Auth-Token'] = auth_token
@@ -46,7 +46,7 @@ def user_login_request():
     auth_token: str = result.get('auth_token')
     refresh_token: str = result.get('refresh_token')
 
-    response = Response(json.dumps(user.serializable()), 200)
+    response = Response(json.dumps(user.serializable(fields={'balance': True})), 200)
 
     response.headers['Access-Control-Expose-Headers'] = 'X-Auth-Token, X-Refresh-Token'
     response.headers['X-Auth-Token'] = auth_token
@@ -74,7 +74,7 @@ def add_user_credentials_request():
     auth_token: str = result.get('auth_token')
     refresh_token: str = result.get('refresh_token')
 
-    response = Response(json.dumps(user.serializable()), 200)
+    response = Response(json.dumps(user.serializable(fields={'balance': True})), 200)
 
     response.headers['Access-Control-Expose-Headers'] = 'X-Auth-Token, X-Refresh-Token'
     response.headers['X-Auth-Token'] = auth_token
@@ -89,4 +89,4 @@ def get_me_request():
 
     new_user = verify_pending_deposits_for_user(current_user)
 
-    return json.dumps(new_user.serializable())
+    return json.dumps(new_user.serializable(fields={'balance': True}))

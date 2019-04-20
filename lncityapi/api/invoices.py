@@ -27,9 +27,9 @@ def generate_invoice_request(amount: float, memo: str = None):
 @app.route(route_prefix_v1 + '/invoices/get', methods=['POST'])
 @login_required
 def get_invoice_request():
-    body = request.get_json()
+    payload = request.get_json()
 
-    r_hash = body.get('r_hash')
+    r_hash = payload.get('r_hash')
 
     if not r_hash:
         abort(400, 'Please provide \'r_hash\'')

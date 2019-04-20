@@ -8,6 +8,27 @@ from peewee import Model, TextField
 from lncityapi.other.common import lncity_db
 
 
+def deep_clone(d: dict) -> dict:
+    nd = {}
+    for k, v in d.items():
+        if isinstance(v, dict):
+            nd[k] = deep_clone(v)
+        else:
+            nd[k] = v
+
+    return nd
+
+
+def deep_update(bd: dict, ud: dict) -> dict:
+    for k, v in ud.items():
+        if isinstance(v, dict) and isinstance(bd.get(k), dict):
+            bd[k] = deep_update(bd.get(k), v)
+        else:
+            bd[k] = v
+
+    return bd
+
+
 class BaseModel(Model):
 
     def __init__(self, **kwargs):
@@ -37,19 +58,29 @@ class BaseModel(Model):
         if fields is None:
             fields = {}
 
-        return {
-            field_name: self.serializable_field_value(
-                getattr(self, field_name),
-                field_info.get('type', 'base'),
-                fields.get(field_name).get('fields') if isinstance(fields.get(field_name), dict) else None
-            )
-            for field_name, field_info in self._fields.items()
-            if (
-                fields.get(field_name, field_info.get('show', False))
-                if isinstance(fields.get(field_name), bool) else
-                fields.get(field_name, {}).get('show', field_info.get('show', False))
-            )
-        }
+        serialization_fields = deep_clone(self._fields)
+        serialization_fields = deep_update(serialization_fields, fields)
+
+        _serializable = {}
+        for field_name, field_info in serialization_fields.items():
+            if isinstance(field_info, dict) and field_info.get('show', False):
+                try:
+                    field_value = getattr(self, field_name)
+                except Exception as e:
+                    field_value = None
+                _serializable[field_name] = self.serializable_field_value(
+                    field_value,
+                    field_info.get('type', 'base'),
+                    field_info.get('fields', {})
+                )
+            elif isinstance(field_info, bool) and field_info:
+                try:
+                    field_value = getattr(self, field_name)
+                except Exception as e:
+                    field_value = None
+                _serializable[field_name] = self.serializable_field_value(field_value, 'base', {})
+
+        return _serializable
 
 
 class JSONField(TextField):
