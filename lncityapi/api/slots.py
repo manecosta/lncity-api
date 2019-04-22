@@ -4,6 +4,7 @@ from flask import request, abort
 from flask_login import login_required, current_user
 
 from lncityapi import app
+from lncityapi.controllers.logscontroller import add_log
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.controllers.slotscontroller import available_symbols, lines, symbol_names, get_random_board, base_bet,\
     max_bet_multiplier, min_bet_multiplier, wild_symbol_name, bonus_symbol_name
@@ -51,6 +52,11 @@ def get_board_request():
 
     if multiplied_prize > 0:
         add_user_balance(current_user, multiplied_prize)
+
+    add_log(current_user.id, 1, 'play', {
+        'bet': bet_price,
+        'prize': multiplied_prize
+    })
 
     return json.dumps({
         'board': board,

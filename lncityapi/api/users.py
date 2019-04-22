@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from marshmallow import ValidationError
 
 from lncityapi import app
+from lncityapi.controllers.logscontroller import add_log
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.requests.userrequests import UserLoginRequest, UserAddCredentialsRequest
 from lncityapi.controllers.userscontroller import login, register_user, add_username_and_password
@@ -52,6 +53,8 @@ def user_login_request():
     response.headers['X-Auth-Token'] = auth_token
     response.headers['X-Refresh-Token'] = refresh_token
 
+    add_log(user.id, None, 'login', {})
+
     return response
 
 
@@ -80,6 +83,8 @@ def add_user_credentials_request():
     response.headers['X-Auth-Token'] = auth_token
     response.headers['X-Refresh-Token'] = refresh_token
 
+    add_log(user.id, None, 'addcredentials', {})
+
     return response
 
 
@@ -88,5 +93,7 @@ def add_user_credentials_request():
 def get_me_request():
 
     new_user = verify_pending_deposits_for_user(current_user)
+
+    add_log(current_user.id, None, 'me', {})
 
     return json.dumps(new_user.serializable(fields={'balance': True}))
