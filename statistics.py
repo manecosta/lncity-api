@@ -50,11 +50,11 @@ def run():
         },
         {
             'title': 'Wealthier 10 Users:',
-            'value': '\n' + '\n\t'.join([f'{u.username if u.username else u.id} - Balance: {u.balance} - Created: {arrow.get(u.created_time).humanize()}' for u in wealthier_10_users])
+            'value': '\n\t' + '\n\t'.join([f'{u.username if u.username else u.id} - Balance: {u.balance} - Created: {arrow.get(u.created_time).humanize()}' for u in wealthier_10_users])
         },
         {
             'title': 'Last 10 Users:',
-            'value': '\n' + '\n\t'.join([f'{u.username if u.username else u.id} - Balance: {u.balance} - Created: {arrow.get(u.created_time).humanize()}' for u in last_10_users])
+            'value': '\n\t' + '\n\t'.join([f'{u.username if u.username else u.id} - Balance: {u.balance} - Created: {arrow.get(u.created_time).humanize()}' for u in last_10_users])
         }
     ]
 
