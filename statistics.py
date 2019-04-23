@@ -1,7 +1,9 @@
 
-import arrow, logging
+import arrow, logging, json
 
 from peewee import fn
+
+from lncityapi.models import Log
 from lncityapi.models.user import User
 from lncityapi.models.balance import Deposit, Withdrawal
 
@@ -91,6 +93,31 @@ def run():
     ]
 
     print_section('Balance Statistics', balance_statistics)
+
+    slot_bet = 0
+    slot_prize = 0
+
+    for l in Log.select().where(Log.event == 'play', Log.game == 1):
+        info = json.loads(l.info)
+        slot_bet += info.get('bet')
+        slot_prize += info.get('prize')
+
+    game_statistics = [
+        {
+            'title': 'Slot Bet',
+            'value': f'{slot_bet}'
+        },
+        {
+            'title': 'Slot Prize',
+            'value': f'{slot_prize}'
+        },
+        {
+            'title': 'Slot Profit',
+            'value': f'{slot_bet - slot_prize} ({((slot_bet/slot_prize) - 1) * 100 if slot_prize > 0 else "N/A"}%)'
+        }
+    ]
+
+    print_section('Game Statistics', game_statistics)
 
 
 if __name__ == '__main__':
