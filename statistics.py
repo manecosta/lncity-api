@@ -113,7 +113,7 @@ def run():
         },
         {
             'title': 'Slot Profit',
-            'value': f'{slot_bet - slot_prize} ({((slot_bet/slot_prize) - 1) * 100 if slot_prize > 0 else "N/A"}%)'
+            'value': f'{slot_bet - slot_prize} ({round(((slot_bet/slot_prize) - 1) * 100, 2) if slot_prize > 0 else "N/A"}%)'
         }
     ]
 
