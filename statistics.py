@@ -69,6 +69,9 @@ def run():
     profit_sat = int(total_deposits) - (int(total_withdrawals) + int(owed_balance))
     profit_btc = profit_sat / 100000000
 
+    last_deposits = [d for d in Deposit.select(Deposit, User).join(User).where(Deposit.settled == 1).order_by(Deposit.created_time.desc()).limit(10)]
+    last_withdrawals = [w for w in Withdrawal.select(Withdrawal, User).join(User).where(Withdrawal.settled == 1).order_by(Withdrawal.created_time.desc()).limit(10)]
+
     balance_statistics = [
         {
             'title': 'Owed Balance',
@@ -89,6 +92,14 @@ def run():
         {
             'title': 'Current Profit',
             'value': f'{profit_sat} satoshi ({profit_btc} btc)'
+        },
+        {
+            'title': 'Last 10 Deposits:',
+            'value': '\n\t' + '\n\t'.join([f'{d.user.username if d.user.username else d.user.id} - Amount: {d.amount} - Created: {arrow.get(d.created_time).humanize()}' for d in last_deposits])
+        },
+        {
+            'title': 'Last 10 Withdrawals:',
+            'value': '\n\t' + '\n\t'.join([f'{w.user.username if w.user.username else w.user.id} - Amount: {w.amount} - Created: {arrow.get(w.created_time).humanize()}' for w in last_withdrawals])
         }
     ]
 
