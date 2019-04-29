@@ -26,9 +26,10 @@ def get_slot_parameters():
     })
 
 
+@app.route(route_prefix_v1 + '/games/slots/play', methods=['POST'])
 @app.route(route_prefix_v1 + '/games/slots/getboard', methods=['POST'])
 @login_required
-def get_board_request():
+def play_slot_request():
     payload = request.get_json()
 
     bet_multiplier = payload.get('bet_multiplier')

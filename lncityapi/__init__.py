@@ -18,3 +18,4 @@ import lncityapi.api.users
 import lncityapi.api.balances
 import lncityapi.api.slots
 import lncityapi.api.blogs
+import lncityapi.api.roulettes
