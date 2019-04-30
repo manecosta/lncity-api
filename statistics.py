@@ -3,7 +3,7 @@ import arrow, logging, json
 
 from peewee import fn
 
-from lncityapi.models import Log
+from lncityapi.models import Log, Game
 from lncityapi.models.user import User
 from lncityapi.models.balance import Deposit, Withdrawal
 
@@ -107,11 +107,17 @@ def run():
 
     slot_bet = 0
     slot_prize = 0
+    roulette_bet = 0
+    roulette_prize = 0
 
-    for l in Log.select().where(Log.event == 'play', Log.game == 1):
+    for l in Log.select(Log, Game).join(Game).where(Log.event == 'play'):
         info = json.loads(l.info)
-        slot_bet += info.get('bet')
-        slot_prize += info.get('prize')
+        if l.game.name == 'slot':
+            slot_bet += info.get('bet')
+            slot_prize += info.get('prize')
+        elif l.game.name == 'roulette':
+            roulette_bet += info.get('bet')
+            roulette_prize += info.get('prize')
 
     game_statistics = [
         {
@@ -125,6 +131,18 @@ def run():
         {
             'title': 'Slot Profit',
             'value': f'{slot_bet - slot_prize} ({round(((slot_bet/slot_prize) - 1) * 100, 2) if slot_prize > 0 else "N/A"}%)'
+        },
+        {
+            'title': 'Roulette Bet',
+            'value': f'{roulette_bet}'
+        },
+        {
+            'title': 'Roulette Prize',
+            'value': f'{roulette_prize}'
+        },
+        {
+            'title': 'Roulette Profit',
+            'value': f'{roulette_bet - roulette_prize} ({round(((roulette_bet/roulette_prize) - 1) * 100, 2) if roulette_prize > 0 else "N/A"}%)'
         }
     ]
 
