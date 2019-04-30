@@ -8,8 +8,20 @@ from lncityapi import app
 from lncityapi.controllers.balancescontroller import add_user_balance
 from lncityapi.controllers.logscontroller import add_log
 from lncityapi.other.util import route_prefix_v1
-from lncityapi.controllers.roulettescontroller import VALID_COUNTS, REGULAR_SYMBOL_COUNT, MIN_BET_AMOUNT,\
+from lncityapi.controllers.roulettescontroller import GREEN_COUNT, VALID_COUNTS, REGULAR_SYMBOL_COUNT, MIN_BET_AMOUNT,\
     MAX_BET_AMOUNT, play_roulette
+
+
+@app.route(route_prefix_v1 + '/games/roulettes/getparameters', methods=['GET'])
+@login_required
+def get_roulette_parameters():
+    return json.dumps({
+        'valid_counts': VALID_COUNTS,
+        'green_count': GREEN_COUNT,
+        'regular_symbol_count': REGULAR_SYMBOL_COUNT,
+        'min_bet_amount': MIN_BET_AMOUNT,
+        'max_bet_amount': MAX_BET_AMOUNT
+    })
 
 
 @app.route(route_prefix_v1 + '/games/roulettes/play', methods=['POST'])
