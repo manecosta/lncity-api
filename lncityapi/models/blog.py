@@ -43,6 +43,10 @@ class Blogpost(BaseModel):
 
     def __init__(self, **kwargs):
         kwargs['fields'] = {
+            'id': {
+                'type': 'base',
+                'show': True
+            },
             'user': {
                 'type': 'model',
                 'show': True
@@ -127,6 +131,10 @@ class Blogpostcomment(BaseModel):
 
     def __init__(self, **kwargs):
         kwargs['fields'] = {
+            'id': {
+                'type': 'base',
+                'show': True
+            },
             'user': {
                 'type': 'model',
                 'show': True

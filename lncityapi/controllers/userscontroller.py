@@ -245,6 +245,13 @@ def get_user_by_username(username: str) -> Optional[User]:
     return None
 
 
+def get_user(user_id):
+    for u in User.select().where(User.id == user_id):
+        return u
+
+    return None
+
+
 def get_user_by_auth_token(auth_token: str, add_auth_properties=False) -> Optional[User]:
     for uat in Userauthtoken.select(Userauthtoken, User)\
             .join(User).where(Userauthtoken.auth_token == auth_token,
