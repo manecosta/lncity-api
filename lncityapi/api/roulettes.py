@@ -47,7 +47,7 @@ def play_roulette_request():
             abort(400, 'Unexpected symbols')
 
         amount = bet.get('amount')
-        if not isinstance(amount, int) or amount == 0:
+        if not isinstance(amount, int) or amount <= 0:
             abort(400, 'Invalid bet amount')
 
         bet['multiplier'] = REGULAR_SYMBOL_COUNT / len(symbols)
