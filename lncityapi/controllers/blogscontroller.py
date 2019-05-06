@@ -2,8 +2,7 @@ import arrow
 
 from peewee import fn, JOIN
 
-from lncityapi.models.blog import Blog, Blogpost, Blogpostcomment
-from lncityapi.models.user import User
+from lncityapi.models import Blog, Blogpost, Blogpostcomment, User
 
 
 def blog_exists(blog_id):

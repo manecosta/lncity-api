@@ -1,14 +1,15 @@
 
-from peewee import ForeignKeyField, CharField, DoubleField
+from peewee import ForeignKeyField, CharField, DoubleField, IntegerField
 
-from lncityapi.models import BaseModel, JSONField, User, Game
+from lncityapi.models import BaseModel, JSONField, User
 
 
-class Log(BaseModel):
+class Notification(BaseModel):
     user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    game = ForeignKeyField(column_name='game_id', field='id', model=Game, null=True)
+    other_user = ForeignKeyField(column_name='other_user_id', field='id', model=User, null=True)
     event = CharField(max_length=64, null=False)
     info = JSONField(null=False)
+    seen = IntegerField(null=False)
     time = DoubleField(null=False)
 
     def __init__(self, **kwargs):
@@ -17,7 +18,7 @@ class Log(BaseModel):
                 'type': 'model',
                 'show': True
             },
-            'game': {
+            'other_user': {
                 'type': 'model',
                 'show': True
             },
@@ -29,6 +30,10 @@ class Log(BaseModel):
                 'type': 'base',
                 'show': True
             },
+            'seen': {
+                'type': 'base',
+                'show': True
+            },
             'time': {
                 'type': 'base',
                 'show': True
@@ -37,4 +42,4 @@ class Log(BaseModel):
         super().__init__(**kwargs)
 
     class Meta:
-        table_name = 'log'
+        table_name = 'notification'

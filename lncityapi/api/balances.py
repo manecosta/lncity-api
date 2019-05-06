@@ -7,6 +7,7 @@ from marshmallow import ValidationError
 
 from conf import conf
 from lncityapi import app
+from lncityapi.controllers.notificationscontroller import add_notification
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.requests.balancerequests import DepositBalanceRequest, WithdrawBalanceRequest
 from lncityapi.controllers.balancescontroller import generate_deposit_invoice_for_user, expire_deposit_invoices, \

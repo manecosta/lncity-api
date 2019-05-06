@@ -1,7 +1,7 @@
 
 import json, arrow
 
-from lncityapi.models.log import Log
+from lncityapi.models import Log
 
 
 def add_log(user_id, game_id, event, info, time=None):

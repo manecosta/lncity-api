@@ -21,7 +21,7 @@ def get_blog_posts_request(blog_id, page, count):
     return json.dumps({
         'page': page,
         'count': count,
-        'all_count': get_blog_post_count(blog_id),
+        'total': get_blog_post_count(blog_id),
         'posts': [bp.serializable() for bp in get_blog_posts(blog_id, page, count)]
     })
 
@@ -54,7 +54,7 @@ def get_blog_post_comments_request(blog_id, blogpost_id, page, count):
     return json.dumps({
         'page': page,
         'count': count,
-        'all_count': get_blog_post_comment_count(blogpost_id),
+        'total': get_blog_post_comment_count(blogpost_id),
         'comments': [bpc.serializable() for bpc in get_blog_post_comments(blogpost_id, page, count)]
     })
 

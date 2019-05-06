@@ -1,7 +1,7 @@
 
 from peewee import CharField, IntegerField, ForeignKeyField, DoubleField
 
-from lncityapi.models.basemodel import BaseModel
+from lncityapi.models import BaseModel
 
 
 class User(BaseModel):

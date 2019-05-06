@@ -4,10 +4,12 @@ import logging
 
 from typing import Tuple, Union
 
+from flask_login import current_user
+
 from conf import conf
-from lncityapi.models.user import User
-from lncityapi.services.lnd import lnd
-from lncityapi.models.balance import Deposit, Withdrawal
+from lncityapi.controllers.notificationscontroller import add_notification
+from lncityapi.models import User, Deposit, Withdrawal
+from lncityapi.services import lnd
 
 
 def expire_deposit_invoices():
@@ -51,6 +53,11 @@ def try_update_balance_with_deposit_invoice(r_hash: str) -> bool:
 
     if lines_changed > 0:
         User.update(balance=User.balance+pending_deposit.amount).where(User.id == pending_deposit.user_id).execute()
+
+        add_notification(current_user, None, 'deposit', {
+            'amount': pending_deposit.amount
+        })
+
         return True
 
     return False
@@ -137,6 +144,10 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
 
     withdrawal.settled = 1
     withdrawal.save()
+
+    add_notification(current_user, None, 'withdraw', {
+        'amount': amount
+    })
 
     return 200, 'Payment sent'
 

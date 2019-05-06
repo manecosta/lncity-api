@@ -1,8 +1,7 @@
 
 from peewee import ForeignKeyField, CharField, IntegerField, DoubleField
 
-from lncityapi.models.basemodel import BaseModel
-from lncityapi.models import User
+from lncityapi.models import BaseModel, User
 
 
 class Deposit(BaseModel):

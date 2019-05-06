@@ -1,7 +1,7 @@
 
 from peewee import CharField
 
-from lncityapi.models.basemodel import BaseModel
+from lncityapi.models import BaseModel
 
 
 class Game(BaseModel):

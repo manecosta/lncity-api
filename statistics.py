@@ -3,9 +3,7 @@ import arrow, logging, json
 
 from peewee import fn
 
-from lncityapi.models import Log, Game
-from lncityapi.models.user import User
-from lncityapi.models.balance import Deposit, Withdrawal
+from lncityapi.models import Log, Game, User, Deposit, Withdrawal
 
 
 logger = logging.getLogger('peewee')

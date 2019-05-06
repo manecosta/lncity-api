@@ -7,7 +7,7 @@ from flask_login import login_required
 from conf import conf
 from lncityapi import app
 from lncityapi.controllers.balancescontroller import try_update_balance_with_deposit_invoice
-from lncityapi.services.lnd import lnd
+from lncityapi.services import lnd
 from lncityapi.other.util import route_prefix_v1
 
 

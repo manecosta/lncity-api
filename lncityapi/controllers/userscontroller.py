@@ -3,8 +3,7 @@ import binascii, hashlib, uuid, arrow
 
 from typing import Tuple, Union, Optional
 
-from lncityapi.models import User, Userauthtoken, Userrefreshtoken
-from lncityapi.models.spamblock import Spamblock
+from lncityapi.models import User, Userauthtoken, Userrefreshtoken, Spamblock
 from lncityapi.other.util import random_string
 
 

@@ -1,8 +1,7 @@
 
 from peewee import ForeignKeyField, CharField, DoubleField, TextField
 
-from lncityapi.models.basemodel import BaseModel
-from lncityapi.models import User
+from lncityapi.models import BaseModel, User
 
 
 class Blog(BaseModel):

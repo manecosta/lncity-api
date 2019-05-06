@@ -46,6 +46,7 @@ def handle_exception_error(e: Exception):
         return e.description, e.code
 
     if request.method == 'GET':
+        logging.exception(f'500 - Internal Server Error. ExceptionType: {repr(e)}.')
         return '500 - Internal Server Error', 500
 
     if request.json is not None:
@@ -61,4 +62,4 @@ def handle_exception_error(e: Exception):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5001)
+    app.run(host='127.0.0.1', port=5001, debug=True)

@@ -1,7 +1,7 @@
 
 from peewee import IntegerField, CharField, DoubleField
 
-from lncityapi.models.basemodel import BaseModel
+from lncityapi.models import BaseModel
 
 
 class Spamblock(BaseModel):
