@@ -56,7 +56,7 @@ def try_update_balance_with_deposit_invoice(r_hash: str) -> bool:
 
         add_notification(current_user, None, 'deposit', {
             'amount': pending_deposit.amount
-        })
+        }, True)
 
         return True
 
@@ -147,7 +147,7 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
 
     add_notification(current_user, None, 'withdraw', {
         'amount': amount
-    })
+    }, True)
 
     return 200, 'Payment sent'
 

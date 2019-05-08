@@ -12,8 +12,9 @@ from lncityapi.controllers.blogscontroller import blog_exists, get_blog_post_cou
 
 
 @app.route(route_prefix_v1 + '/blogs/<int:blog_id>/posts/<int:page>/<int:count>', methods=['GET'])
+@app.route(route_prefix_v1 + '/blogs/<int:blog_id>/posts/<int:page>/<int:count>/tags/<string:tag>', methods=['GET'])
 @login_required
-def get_blog_posts_request(blog_id, page, count):
+def get_blog_posts_request(blog_id, page, count, tag=None):
 
     if not blog_exists(blog_id):
         abort(404, 'Blog not found')
@@ -21,8 +22,8 @@ def get_blog_posts_request(blog_id, page, count):
     return json.dumps({
         'page': page,
         'count': count,
-        'total': get_blog_post_count(blog_id),
-        'posts': [bp.serializable() for bp in get_blog_posts(blog_id, page, count)]
+        'total': get_blog_post_count(blog_id, tag=tag),
+        'posts': [bp.serializable() for bp in get_blog_posts(blog_id, page, count, tag=tag)]
     })
 
 

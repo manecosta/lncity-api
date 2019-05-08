@@ -52,7 +52,10 @@ class BaseModel(Model):
         elif field_type == 'date':
             return arrow.get(field_value).format()
         elif field_type == 'model':
-            return field_value.serializable(field_fields)
+            if isinstance(field_value, list):
+                return [v.serializable(field_fields) for v in field_value]
+            else:
+                return field_value.serializable(field_fields)
 
     def serializable(self, fields: Dict[str, Union[bool, dict]] = None) -> Dict[str, Any]:
         if fields is None:

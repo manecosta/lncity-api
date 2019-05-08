@@ -1,7 +1,9 @@
+from typing import Dict, Union
+
 
 from peewee import ForeignKeyField, CharField, DoubleField, TextField
 
-from lncityapi.models import BaseModel, User
+from lncityapi.models import BaseModel, User, Tag
 
 
 class Blog(BaseModel):
@@ -54,6 +56,10 @@ class Blogpost(BaseModel):
                 'type': 'model',
                 'show': False
             },
+            'tags': {
+                'type': 'model',
+                'show': True
+            },
             'title': {
                 'type': 'base',
                 'show': True
@@ -87,6 +93,31 @@ class Blogpost(BaseModel):
 
     class Meta:
         table_name = 'blogpost'
+
+
+class Blogposttag(BaseModel):
+    blogpost = ForeignKeyField(column_name='blogpost_id', field='id', model=Blogpost, null=False)
+    tag = ForeignKeyField(column_name='tag_id', field='id', model=Tag, null=False)
+
+    def __init__(self, **kwargs):
+        kwargs['fields'] = {
+            'id': {
+                'type': 'base',
+                'show': True
+            },
+            'blogpost': {
+                'type': 'model',
+                'show': True
+            },
+            'tag': {
+                'type': 'model',
+                'show': False
+            }
+        }
+        super().__init__(**kwargs)
+
+    class Meta:
+        table_name = 'blogposttag'
 
 
 class Blogpostdonation(BaseModel):

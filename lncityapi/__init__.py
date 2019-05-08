@@ -21,3 +21,4 @@ import lncityapi.api.blogs
 import lncityapi.api.roulettes
 import lncityapi.api.tips
 import lncityapi.api.notifications
+import lncityapi.api.tags

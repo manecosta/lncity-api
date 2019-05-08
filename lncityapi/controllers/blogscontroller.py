@@ -1,8 +1,8 @@
 import arrow
 
-from peewee import fn, JOIN
+from peewee import fn, JOIN, prefetch
 
-from lncityapi.models import Blog, Blogpost, Blogpostcomment, User
+from lncityapi.models import Blog, Blogpost, Blogpostcomment, User, Blogposttag, Tag
 
 
 def blog_exists(blog_id):
@@ -17,8 +17,11 @@ def blog_post_exists(blog_id, blogpost_id):
     return False
 
 
-def get_blog_post_count(blog_id):
-    return Blogpost.select().where(Blogpost.blog == blog_id).count()
+def get_blog_post_count(blog_id, tag=None):
+    if tag is None:
+        return Blogpost.select().where(Blogpost.blog == blog_id).count()
+    else:
+        return Blogposttag.select(Blogposttag, Tag).join(Tag).where(Tag.name == tag, Tag.blog == blog_id).count()
 
 
 def get_blog_post(blogpost_id):
@@ -37,22 +40,49 @@ def get_blog_post(blogpost_id):
     return None
 
 
-def get_blog_posts(blog_id, page, count):
+def get_blog_posts(blog_id, page, count, tag=None):
 
-    blogposts_query = (
-        Blogpost.select(Blogpost, User, fn.COUNT(Blogpostcomment.id).alias('comments_count'))
-            .join(User)
-            .switch(Blogpost)
-            .join(Blogpostcomment, JOIN.LEFT_OUTER)
-            .where(Blogpost.blog == blog_id)
-            .order_by(Blogpost.created_time.desc())
-            .group_by(Blogpost.id)
-            .paginate(page, count)
-    )
+    if tag is None:
+        blogposts_query = (
+            Blogpost.select(Blogpost, User, fn.COUNT(Blogpostcomment.id).alias('comments_count'))
+                .join(User)
+                .switch(Blogpost)
+                .join(Blogpostcomment, JOIN.LEFT_OUTER)
+                .where(Blogpost.blog == blog_id)
+                .order_by(Blogpost.created_time.desc())
+                .group_by(Blogpost.id)
+                .paginate(page, count)
+        )
+    else:
+        blogpost_ids = [bpt.blogpost_id for bpt in Blogposttag.select(Blogposttag, Tag).join(Tag).where(Tag.name == tag, Tag.blog == blog_id)]
+
+        blogposts_query = (
+            Blogpost.select(Blogpost, User, fn.COUNT(Blogpostcomment.id).alias('comments_count'))
+                .join(User)
+                .switch(Blogpost)
+                .join(Blogpostcomment, JOIN.LEFT_OUTER)
+                .where(Blogpost.blog == blog_id, Blogpost.id.in_(blogpost_ids))
+                .order_by(Blogpost.created_time.desc())
+                .group_by(Blogpost.id)
+                .paginate(page, count)
+        )
 
     blogposts = []
+    blogposts_by_id = {}
     for bp in blogposts_query:
+        setattr(bp, 'tags', [])
         blogposts.append(bp)
+        blogposts_by_id[str(bp.id)] = bp
+
+    blogposttags_query = (
+        Blogposttag.select(Blogposttag, Tag)
+            .join(Tag)
+            .where(Blogposttag.blogpost << [int(k) for k in blogposts_by_id.keys()])
+    )
+
+    for bpt in blogposttags_query:
+        bp = blogposts_by_id.get(str(bpt.blogpost_id))
+        bp.tags.append(bpt.tag)
 
     return blogposts
 
