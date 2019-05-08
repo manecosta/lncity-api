@@ -9,8 +9,8 @@ max_bet_multiplier = 10
 num_lines = 3
 num_columns = 5
 
-wildcard_chance = 0.08
-bonus_chance = 0.08
+wildcard_chance = 0.03
+bonus_chance = 0.04
 
 lines = [
     [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]],
@@ -23,43 +23,43 @@ lines = [
 available_symbols = {
     'Grapes': {
         'imagePath': 'assets/img/slot/grapes.png',
-        'prize': [0, 0, 250, 500, 1000],
+        'prize': [0, 0, 250, 1000, 4000],
         'isWild': False,
         'isBonus': False
     },
     'Lemon': {
         'imagePath': 'assets/img/slot/lemon.png',
-        'prize': [0, 0, 500, 1000, 2000],
+        'prize': [0, 0, 500, 2000, 8000],
         'isWild': False,
         'isBonus': False
     },
     'Seven': {
         'imagePath': 'assets/img/slot/seven.png',
-        'prize': [0, 0, 750, 1500, 3000],
+        'prize': [0, 0, 750, 3000, 12000],
         'isWild': False,
         'isBonus': False
     },
     'Clover': {
         'imagePath': 'assets/img/slot/clover.png',
-        'prize': [0, 0, 1000, 2000, 4000],
+        'prize': [0, 0, 1000, 4000, 16000],
         'isWild': False,
         'isBonus': False
     },
     'Diamond': {
         'imagePath': 'assets/img/slot/diamond.png',
-        'prize': [0, 0, 1250, 2500, 5000],
+        'prize': [0, 0, 1500, 6000, 24000],
         'isWild': False,
         'isBonus': False
     },
     'Bitcoin': {
         'imagePath': 'assets/img/slot/bitcoin.png',
-        'prize': [0, 0, 500, 1250, 3500, 10000],
+        'prize': [0, 0, 1250, 2500, 10000, 50000],
         'isWild': False,
         'isBonus': True
     },
     'Satoshi': {
         'imagePath': 'assets/img/slot/satoshi.png',
-        'prize': [0, 0, 0, 0, 20000],
+        'prize': [0, 0, 0, 0, 100000],
         'isWild': True,
         'isBonus': False
     }
