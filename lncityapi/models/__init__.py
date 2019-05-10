@@ -7,3 +7,4 @@ from .tag import *
 from .blog import *
 from .spamblock import *
 from .notification import *
+from .poker import *

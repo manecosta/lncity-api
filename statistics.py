@@ -107,6 +107,8 @@ def run():
     slot_prize = 0
     roulette_bet = 0
     roulette_prize = 0
+    poker_bet = 0
+    poker_prize = 0
 
     for l in Log.select(Log, Game).join(Game).where(Log.event == 'play'):
         info = json.loads(l.info)
@@ -116,6 +118,9 @@ def run():
         elif l.game.name == 'roulette':
             roulette_bet += info.get('bet')
             roulette_prize += info.get('prize')
+        elif l.game.name == 'poker':
+            poker_bet += info.get('bet')
+            poker_prize += info.get('prize')
 
     game_statistics = [
         {
@@ -141,6 +146,18 @@ def run():
         {
             'title': 'Roulette Profit',
             'value': f'{roulette_bet - roulette_prize} ({round(((roulette_bet/roulette_prize) - 1) * 100, 2) if roulette_prize > 0 else "N/A"}%)'
+        },
+        {
+            'title': 'Poker Bet',
+            'value': f'{poker_bet}'
+        },
+        {
+            'title': 'Poker Prize',
+            'value': f'{poker_prize}'
+        },
+        {
+            'title': 'Poker Profit',
+            'value': f'{poker_bet - poker_prize} ({round(((poker_bet/poker_prize) - 1) * 100, 2) if poker_prize > 0 else "N/A"}%)'
         }
     ]
 
