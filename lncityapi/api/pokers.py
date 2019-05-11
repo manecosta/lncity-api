@@ -48,20 +48,30 @@ def get_pocker_hand_request():
     if not success:
         abort(400, 'Not enough balance')
 
-    identifier, front_cards = new_poker_hand(current_user, bet_multiplier)
+    identifier, front_cards, matched_indexes, prize_info = new_poker_hand(current_user, bet_multiplier)
 
     if identifier is None:
         abort(400, 'Nope.')
 
+    prize = 0
+    if prize_info is not None:
+        prize_multiplier = prize_info.get('multiplier')
+        prize = bet_price * prize_multiplier
+
     add_log(current_user.id, 3, 'play_get', {
-        'front_cards': front_cards,
         'identifier': identifier,
-        'multiplier': bet_multiplier
+        'front_cards': front_cards,
+        'multiplier': bet_multiplier,
+        'bet': bet_price,
+        'prize': prize
     })
 
     return json.dumps({
+        'identifier': identifier,
         'front_cards': front_cards,
-        'identifier': identifier
+        'matched_indexes': matched_indexes,
+        'prize_info': prize_info,
+        'prize': prize
     })
 
 

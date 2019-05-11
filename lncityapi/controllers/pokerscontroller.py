@@ -268,32 +268,62 @@ def get_game_cards():
     }
 
 
+def check_hand_cards(hand_cards):
+    for prize_info in prize_infos:
+        check_result = True
+        matched_indexes = None
+        for check in prize_info.get('checks'):
+            is_match, mi = check(hand_cards)
+            check_result = check_result and is_match
+            if is_match and matched_indexes is None:
+                matched_indexes = mi
+            if not check_result:
+                break
+
+        if check_result:
+            return matched_indexes, {k: v for k, v in prize_info.items() if k != 'checks'}
+
+    return [], None
+
+
 def new_poker_hand(user, multiplier):
 
+    identifier = None
+    hand_cards = None
+    matched_indexes = []
+    prize_info = None
+
     for ph in Pokerhand.select().where(Pokerhand.user == user.id, Pokerhand.settled == 0):
-        return ph.identifier, ph.info.get('front')
+        identifier = ph.identifier
+        hand_cards = ph.info.get('front')
 
-    game_cards = get_game_cards()
+    if identifier is None:
+        game_cards = get_game_cards()
+        hand_cards = game_cards.get('front')
 
-    identifier = uuid4().hex
+        identifier = uuid4().hex
 
-    poker_hand = Pokerhand.create(
-        identifier=identifier,
-        user=user.id,
-        info=game_cards,
-        settled=0,
-        multiplier=multiplier,
-        time=time()
-    )
+        poker_hand = Pokerhand.create(
+            identifier=identifier,
+            user=user.id,
+            info=game_cards,
+            settled=0,
+            multiplier=multiplier,
+            time=time()
+        )
 
-    # Checking if two hands were added in the meantime
-    user_unsettled_hands_count = Pokerhand.select().where(Pokerhand.user == user.id, Pokerhand.settled == 0).count()
+        # Checking if two hands were added in the meantime
+        user_unsettled_hands_count = Pokerhand.select().where(Pokerhand.user == user.id, Pokerhand.settled == 0).count()
 
-    if user_unsettled_hands_count > 1:
-        poker_hand.delete_instance()
-        return None, None
+        if user_unsettled_hands_count > 1:
+            poker_hand.delete_instance()
+            identifier = None
+            hand_cards = None
 
-    return identifier, game_cards['front']
+    if hand_cards is not None:
+        matched_indexes, prize_info = check_hand_cards(hand_cards)
+
+    return identifier, hand_cards, matched_indexes, prize_info
 
 
 def get_pocker_hand(identifier, user):
@@ -322,21 +352,9 @@ def play_poker_hand(poker_hand, hold_indexes):
         else:
             result_cards.append(back_cards[i])
 
-    for prize_info in prize_infos:
-        check_result = True
-        matched_indexes = None
-        for check in prize_info.get('checks'):
-            is_match, mi = check(result_cards)
-            check_result = check_result and is_match
-            if is_match and matched_indexes is None:
-                matched_indexes = mi
-            if not check_result:
-                break
+    matched_indexes, prize_info = check_hand_cards(result_cards)
 
-        if check_result:
-            return result_cards, matched_indexes, {k: v for k, v in prize_info.items() if k != 'checks'}
-
-    return result_cards, [], None
+    return result_cards, matched_indexes, prize_info
 
 
 def settle_poker_hand(poker_hand):
