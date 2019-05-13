@@ -9,7 +9,8 @@ from lncityapi import app
 from lncityapi.controllers.logscontroller import add_log
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.requests.userrequests import UserLoginRequest, UserAddCredentialsRequest
-from lncityapi.controllers.userscontroller import login, register_user, add_username_and_password
+from lncityapi.controllers.userscontroller import login, register_user, add_username_and_password, get_user_by_username, \
+    get_user
 from lncityapi.controllers.balancescontroller import verify_pending_deposits_for_user
 from lncityapi.models import User
 
@@ -97,3 +98,19 @@ def get_me_request():
     add_log(current_user.id, None, 'me', {})
 
     return json.dumps(new_user.serializable(fields={'balance': True}))
+
+
+@app.route(route_prefix_v1 + '/users/<string:username>', methods=['GET'])
+@app.route(route_prefix_v1 + '/users/<int:user_id>', methods=['GET'])
+@login_required
+def get_user_request(user_id=None, username=None):
+
+    if user_id is not None:
+        user = get_user(user_id)
+    else:
+        user = get_user_by_username(username)
+
+    if user is None:
+        abort(404, 'User not found')
+
+    return json.dumps(user.serializable(fields={'id': True, 'username': True, 'created_time': False, 'updated_time': False}))

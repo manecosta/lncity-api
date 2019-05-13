@@ -34,7 +34,7 @@ config = {
     'MYSQL_PASS': '',
 
     'MAX_BALANCE_MOVEMENT': 500000,
-    'MIN_BALANCE_MOVEMENT': 1000,
+    'MIN_BALANCE_MOVEMENT': 100,
     'INVOICE_TIMEOUT': 300,
 
     'VERSION': '0.0.1'
@@ -49,8 +49,8 @@ if os.name == 'nt':
         'LND_CERT_PATH': 'auth/tls.cert',
         'LND_MACAROON_PATH': 'auth/admin.macaroon',
 
-        'MYSQL_USER': 'user',
-        'MYSQL_PASS': 'pass'
+        'MYSQL_USER': 'root',
+        'MYSQL_PASS': 'OHzz%Xq%7dc6Sr5WX%gu'
     })
 
 conf = Conf(config)
