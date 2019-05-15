@@ -292,10 +292,13 @@ def new_poker_hand(user, multiplier):
     hand_cards = None
     matched_indexes = []
     prize_info = None
+    recovered = False
 
     for ph in Pokerhand.select().where(Pokerhand.user == user.id, Pokerhand.settled == 0):
         identifier = ph.identifier
         hand_cards = ph.info.get('front')
+        multiplier = ph.multiplier
+        recovered = True
 
     if identifier is None:
         game_cards = get_game_cards()
@@ -323,7 +326,7 @@ def new_poker_hand(user, multiplier):
     if hand_cards is not None:
         matched_indexes, prize_info = check_hand_cards(hand_cards)
 
-    return identifier, hand_cards, matched_indexes, prize_info
+    return identifier, hand_cards, matched_indexes, prize_info, recovered, multiplier
 
 
 def get_pocker_hand(identifier, user):
