@@ -20,5 +20,5 @@ https://ln.city
 
 # Vulnerabilities
 
-I tried protecting the server agains't most vulnerabiliies I could think of.
+I tried protecting the server agains't most vulnerabilities I could think of.
 By analysing the code it's likely that some are found, please disclose them instead of stealing all the funds from my live node! Thanks
