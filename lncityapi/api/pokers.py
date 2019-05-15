@@ -7,6 +7,7 @@ from flask_login import login_required, current_user
 from lncityapi import app
 from lncityapi.controllers.balancescontroller import add_user_balance
 from lncityapi.controllers.logscontroller import add_log
+from lncityapi.controllers.userscontroller import get_user
 from lncityapi.other.util import route_prefix_v1
 from lncityapi.controllers.pokerscontroller import base_bet, min_bet_multiplier, max_bet_multiplier, new_poker_hand, \
     get_pocker_hand, play_poker_hand, prize_infos, settle_poker_hand, cards
@@ -48,31 +49,41 @@ def get_pocker_hand_request():
     if not success:
         abort(400, 'Not enough balance')
 
-    identifier, front_cards, matched_indexes, prize_info = new_poker_hand(current_user, bet_multiplier)
+    identifier, front_cards, matched_indexes, prize_info, recovered, multiplier = new_poker_hand(current_user, bet_multiplier)
 
     if identifier is None:
         abort(400, 'Nope.')
+
+    if recovered:
+        # Crediting back the user since we recovered an already paid for hand
+        add_user_balance(current_user, bet_price)
 
     prize = 0
     if prize_info is not None:
         prize_multiplier = prize_info.get('multiplier')
         prize = bet_price * prize_multiplier
 
-    add_log(current_user.id, 3, 'play_get', {
-        'identifier': identifier,
-        'front_cards': front_cards,
-        'multiplier': bet_multiplier,
-        'bet': bet_price,
-        'prize': prize
-    })
-
-    return json.dumps({
+    response = {
         'identifier': identifier,
         'front_cards': front_cards,
         'matched_indexes': matched_indexes,
         'prize_info': prize_info,
         'prize': prize
-    })
+    }
+
+    if not recovered:
+        add_log(current_user.id, 3, 'play_get', {
+            'identifier': identifier,
+            'front_cards': front_cards,
+            'multiplier': bet_multiplier,
+            'bet': bet_price,
+            'prize': prize
+        })
+    else:
+        response['balance'] = get_user(current_user.id).balance
+        response['multiplier'] = multiplier
+
+    return json.dumps(response)
 
 
 @app.route(route_prefix_v1 + '/games/pokers/play', methods=['POST'])
