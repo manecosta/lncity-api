@@ -35,6 +35,9 @@ def get_blog_post(blogpost_id):
     )
 
     for bp in blogpost_query:
+        setattr(bp, 'tags', [])
+        for bpt in Blogposttag.select(Blogposttag, Tag).join(Tag).where(Blogposttag.blogpost == bp.id):
+            bp.tags.append(bpt.tag)
         return bp
 
     return None
