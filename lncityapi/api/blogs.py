@@ -13,7 +13,6 @@ from lncityapi.controllers.blogscontroller import blog_exists, get_blog_post_cou
 
 @app.route(route_prefix_v1 + '/blogs/<int:blog_id>/posts/<int:page>/<int:count>', methods=['GET'])
 @app.route(route_prefix_v1 + '/blogs/<int:blog_id>/posts/<int:page>/<int:count>/tags/<string:tag>', methods=['GET'])
-@login_required
 def get_blog_posts_request(blog_id, page, count, tag=None):
 
     if not blog_exists(blog_id):
@@ -28,7 +27,6 @@ def get_blog_posts_request(blog_id, page, count, tag=None):
 
 
 @app.route(route_prefix_v1 + '/blogs/<int:blog_id>/posts/<int:post_id>', methods=['GET'])
-@login_required
 def get_blog_post_request(blog_id, post_id):
 
     if not blog_exists(blog_id):
@@ -43,7 +41,6 @@ def get_blog_post_request(blog_id, post_id):
 
 
 @app.route(route_prefix_v1 + '/blogs/<int:blog_id>/posts/<int:blogpost_id>/comments/<int:page>/<int:count>', methods=['GET'])
-@login_required
 def get_blog_post_comments_request(blog_id, blogpost_id, page, count):
 
     if not blog_exists(blog_id):
