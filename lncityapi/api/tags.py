@@ -9,7 +9,6 @@ from lncityapi.other.util import route_prefix_v1
 
 
 @app.route(route_prefix_v1 + '/tags/get', methods=['GET'])
-@login_required
 def get_tags_request():
 
     tags = get_tags()
