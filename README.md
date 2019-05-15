@@ -17,3 +17,8 @@ https://github.com/manecosta/lncity-web
 You can experiment with the end result here:
 
 https://ln.city
+
+# Vulnerabilities
+
+I tried protecting the server agains't most vulnerabiliies I could think of.
+By analysing the code it's likely that some are found, please disclose them instead of stealing all the funds from my live node! Thanks
