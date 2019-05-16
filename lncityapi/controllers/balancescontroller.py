@@ -134,11 +134,12 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
         result = lnd.pay_payment_request(payment_request)
 
         if result.get('payment_error') is not None:
+            add_user_balance(updated_user, amount)
             withdrawal.delete_instance()
             return 503, 'Unable to process request'
     except Exception as e:
         logging.debug(f'Exception: {e}', exc_info=True)
-        User.update(balance=User.balance + amount).where(User.id == user.id).execute()
+        add_user_balance(updated_user, amount)
         withdrawal.delete_instance()
         return 400, 'Unknown error'
 
