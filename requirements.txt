@@ -7,3 +7,4 @@ pymysql
 cryptography
 arrow
 marshmallow==3.0.0rc5
+autobahn[asyncio]==19.3.3
