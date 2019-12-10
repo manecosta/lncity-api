@@ -16,7 +16,7 @@ https://github.com/manecosta/lncity-web
 
 You can experiment with the end result here:
 
-https://ln.city
+https://ln.city (DOWN)
 
 # Vulnerabilities
 
