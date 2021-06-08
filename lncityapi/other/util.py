@@ -1,5 +1,5 @@
 
-from random import choice
+from secrets import choice
 
 route_prefix_v1 = '/api/v1'
 
