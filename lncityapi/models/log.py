@@ -1,15 +1,21 @@
 
-from peewee import ForeignKeyField, CharField, DoubleField
-
-from lncityapi.models import BaseModel, JSONField, User, Game
+from lncityapi import db
+from lncityapi.models import BaseModel, User, Game
+from sqlalchemy_jsonfield import JSONField
 
 
 class Log(BaseModel):
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    game = ForeignKeyField(column_name='game_id', field='id', model=Game, null=True)
-    event = CharField(max_length=64, null=False)
-    info = JSONField(null=False)
-    time = DoubleField(null=False)
+    __tablename__ = 'log'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.ForeignKey(User.id))
+    game_id = db.Column('game_id', db.ForeignKey(Game.id), nullable=True)
+    event = db.Column('event', db.String(64), nullable=False)
+    info = db.Column('info', JSONField(enforce_string=True, enforce_unicode=False), nullable=False)
+    time = db.Column('time', db.Float, nullable=False)
+
+    user = db.relationship('User', foreign_keys='Log.user_id', lazy='select')
+    game = db.relationship('Game', foreign_keys='Log.game_id', lazy='select')
 
     def __init__(self, **kwargs):
         kwargs['fields'] = {
@@ -35,6 +41,3 @@ class Log(BaseModel):
             }
         }
         super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'log'

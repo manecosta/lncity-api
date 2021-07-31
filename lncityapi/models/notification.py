@@ -1,16 +1,22 @@
 
-from peewee import ForeignKeyField, CharField, DoubleField, IntegerField
-
-from lncityapi.models import BaseModel, JSONField, User
+from lncityapi import db
+from lncityapi.models import BaseModel, User
+from sqlalchemy_jsonfield import JSONField
 
 
 class Notification(BaseModel):
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    other_user = ForeignKeyField(column_name='other_user_id', field='id', model=User, null=True)
-    event = CharField(max_length=64, null=False)
-    info = JSONField(null=False)
-    seen = IntegerField(null=False)
-    time = DoubleField(null=False)
+    __tablename__ = 'notification'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.ForeignKey(User.id), nullable=False)
+    other_user_id = db.Column('other_user_id', db.ForeignKey(User.id), nullable=True)
+    event = db.Column('event', db.String(64), nullable=False)
+    info = db.Column('info', JSONField(enforce_string=True, enforce_unicode=False), nullable=False)
+    seen = db.Column('seen', db.Integer, nullable=False, default=0)
+    time = db.Column('time', db.Float, nullable=False)
+
+    user = db.relationship('User', foreign_keys='Notification.user_id', lazy='select')
+    other_user = db.relationship('User', foreign_keys='Notification.other_user_id', lazy='select')
 
     def __init__(self, **kwargs):
         kwargs['fields'] = {
@@ -40,6 +46,3 @@ class Notification(BaseModel):
             }
         }
         super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'notification'

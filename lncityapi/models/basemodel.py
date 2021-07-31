@@ -3,9 +3,7 @@ import json, arrow
 
 from typing import Dict, Any, Union
 
-from peewee import Model, TextField
-
-from lncityapi.other.common import lncity_db
+from lncityapi import db
 
 
 def deep_clone(d: dict) -> dict:
@@ -29,18 +27,8 @@ def deep_update(bd: dict, ud: dict) -> dict:
     return bd
 
 
-class BaseModel(Model):
-
-    def __init__(self, **kwargs):
-        fields = None
-        if 'fields' in kwargs:
-            fields = kwargs.get('fields')
-            del kwargs['fields']
-        super().__init__(**kwargs)
-        self._fields = fields
-
-    class Meta:
-        database = lncity_db
+class BaseModel(db.Model):
+    __abstract__ = True
 
     @staticmethod
     def serializable_field_value(field_value, field_type, field_fields):
@@ -84,12 +72,3 @@ class BaseModel(Model):
                 _serializable[field_name] = self.serializable_field_value(field_value, 'base', {})
 
         return _serializable
-
-
-class JSONField(TextField):
-    def db_value(self, value):
-        return json.dumps(value)
-
-    def python_value(self, value):
-        if value is not None:
-            return json.loads(value)

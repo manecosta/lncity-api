@@ -1,227 +1,228 @@
-from typing import Dict, Union
-
-
-from peewee import ForeignKeyField, CharField, DoubleField, TextField
-
-from lncityapi.models import BaseModel, User, Tag
+from lncityapi import db
+from lncityapi.models import BaseModel, User
 
 
 class Blog(BaseModel):
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    title = CharField(max_length=128, null=False)
-    created_time = DoubleField(null=False)
+    __tablename__ = 'blog'
 
-    def __init__(self, **kwargs):
-        kwargs['fields'] = {
-            'user': {
-                'type': 'model',
-                'show': True
-            },
-            'title': {
-                'type': 'base',
-                'show': True
-            },
-            'created_time': {
-                'type': 'base',
-                'show': True
-            }
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column('user_id', db.ForeignKey(User.id), nullable=False)
+    title = db.Column('title', db.String(128), nullable=False)
+    created_time = db.Column('created_time', db.Float, nullable=False)
+
+    user = db.relationship('User', foreign_keys='Blog.user_id', lazy='select')
+
+    _fields = {
+        'user': {
+            'type': 'model',
+            'show': True
+        },
+        'title': {
+            'type': 'base',
+            'show': True
+        },
+        'created_time': {
+            'type': 'base',
+            'show': True
         }
-        super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'blog'
+    }
 
 
 class Blogpost(BaseModel):
-    blog = ForeignKeyField(column_name='blog_id', field='id', model=Blog, null=False)
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    title = CharField(max_length=128, null=False)
-    body = TextField(null=False)
-    created_time = DoubleField(null=False)
-    updated_time = DoubleField(null=False)
-    donation_count = DoubleField(null=False, default=0)
-    donation_amount = DoubleField(null=False, default=0)
+    __tablename__ = 'blogpost'
 
-    def __init__(self, **kwargs):
-        kwargs['fields'] = {
-            'id': {
-                'type': 'base',
-                'show': True
-            },
-            'user': {
-                'type': 'model',
-                'show': True
-            },
-            'blog': {
-                'type': 'model',
-                'show': False
-            },
-            'tags': {
-                'type': 'model',
-                'show': True
-            },
-            'title': {
-                'type': 'base',
-                'show': True
-            },
-            'body': {
-                'type': 'base',
-                'show': True
-            },
-            'created_time': {
-                'type': 'base',
-                'show': True
-            },
-            'updated_time': {
-                'type': 'base',
-                'show': True
-            },
-            'donation_count': {
-                'type': 'base',
-                'show': True
-            },
-            'donation_amount': {
-                'type': 'base',
-                'show': True
-            },
-            'comments_count': {
-                'type': 'base',
-                'show': True
-            }
+    id = db.Column('id', db.Integer, primary_key=True)
+    blog_id = db.Column('blog_id', db.ForeignKey(Blog.id), nullable=False)
+    user_id = db.Column('user_id', db.ForeignKey(User.id), nullable=False)
+    title = db.Column('title', db.String(128), nullable=False)
+    body = db.Column('body', db.Text, nullable=False)
+    created_time = db.Column('created_time', db.Float, nullable=False)
+    updated_time = db.Column('updated_time', db.Float, nullable=False)
+    donation_count = db.Column('donation_count', db.Float, nullable=False, default=0)
+    donation_amount = db.Column('donation_amount', db.Float, nullable=False, default=0)
+
+    blog = db.relationship('Blog', foreign_keys='Blogpost.blog_id', lazy='select')
+    user = db.relationship('User', foreign_keys='Blogpost.user_id', lazy='select')
+
+    _fields = {
+        'id': {
+            'type': 'base',
+            'show': True
+        },
+        'user': {
+            'type': 'model',
+            'show': True
+        },
+        'blog': {
+            'type': 'model',
+            'show': False
+        },
+        'tags': {
+            'type': 'model',
+            'show': True
+        },
+        'title': {
+            'type': 'base',
+            'show': True
+        },
+        'body': {
+            'type': 'base',
+            'show': True
+        },
+        'created_time': {
+            'type': 'base',
+            'show': True
+        },
+        'updated_time': {
+            'type': 'base',
+            'show': True
+        },
+        'donation_count': {
+            'type': 'base',
+            'show': True
+        },
+        'donation_amount': {
+            'type': 'base',
+            'show': True
+        },
+        'comments_count': {
+            'type': 'base',
+            'show': True
         }
-        super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'blogpost'
+    }
 
 
 class Blogposttag(BaseModel):
-    blogpost = ForeignKeyField(column_name='blogpost_id', field='id', model=Blogpost, null=False)
-    tag = ForeignKeyField(column_name='tag_id', field='id', model=Tag, null=False)
+    __tablename__ = 'blogposttag'
 
-    def __init__(self, **kwargs):
-        kwargs['fields'] = {
-            'id': {
-                'type': 'base',
-                'show': True
-            },
-            'blogpost': {
-                'type': 'model',
-                'show': True
-            },
-            'tag': {
-                'type': 'model',
-                'show': False
-            }
+    id = db.Column('id', db.Integer, primary_key=True)
+    blogpost_id = db.Column('blogpost_id', db.ForeignKey(Blogpost.id), nullable=False)
+    tag_id = db.Column('tag_id', db.ForeignKey('tag.id'), nullable=False)
+
+    blogpost = db.relationship('Blogpost', foreign_keys='Blogposttag.blogpost_id', lazy='select')
+    tag = db.relationship('Tag', foreign_keys='Blogposttag.tag_id', lazy='select')
+
+    _fields = {
+        'id': {
+            'type': 'base',
+            'show': True
+        },
+        'blogpost': {
+            'type': 'model',
+            'show': True
+        },
+        'tag': {
+            'type': 'model',
+            'show': False
         }
-        super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'blogposttag'
+    }
 
 
 class Blogpostdonation(BaseModel):
-    blogpost = ForeignKeyField(column_name='blogpost_id', field='id', model=Blogpost, null=False)
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    amount = DoubleField(null=False)
-    time = DoubleField(null=False)
+    __tablename__ = 'blogpostdonation'
 
-    def __init__(self, **kwargs):
-        kwargs['fields'] = {
-            'user': {
-                'type': 'model',
-                'show': True
-            },
-            'blogpost': {
-                'type': 'model',
-                'show': False
-            },
-            'amount': {
-                'type': 'base',
-                'show': True
-            },
-            'time': {
-                'type': 'base',
-                'show': True
-            }
+    id = db.Column('id', db.Integer, primary_key=True)
+    blogpost_id = db.Column('blogpost_id', db.ForeignKey(Blogpost.id), nullable=False)
+    user_id = db.Column('user_id', db.ForeignKey(User.id), nullable=False)
+    amount = db.Column('amount', db.Float, nullable=False)
+    time = db.Column('time', db.Float, nullable=False)
+
+    blogpost = db.relationship('Blogpost', foreign_keys='Blogpostdonation.blogpost_id', lazy='select')
+    user = db.relationship('User', foreign_keys='Blogpostdonation.user_id', lazy='select')
+
+    _fields = {
+        'user': {
+            'type': 'model',
+            'show': True
+        },
+        'blogpost': {
+            'type': 'model',
+            'show': False
+        },
+        'amount': {
+            'type': 'base',
+            'show': True
+        },
+        'time': {
+            'type': 'base',
+            'show': True
         }
-        super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'blogpostdonation'
-
+    }
+        
 
 class Blogpostcomment(BaseModel):
-    blogpost = ForeignKeyField(column_name='blogpost_id', field='id', model=Blogpost, null=False)
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    body = TextField(null=False)
-    created_time = DoubleField(null=False)
-    donation_count = DoubleField(null=False, default=0)
-    donation_amount = DoubleField(null=False, default=0)
+    __tablename__ = 'blogpostcomment'
 
-    def __init__(self, **kwargs):
-        kwargs['fields'] = {
-            'id': {
-                'type': 'base',
-                'show': True
-            },
-            'user': {
-                'type': 'model',
-                'show': True
-            },
-            'blogpost': {
-                'type': 'model',
-                'show': False
-            },
-            'body': {
-                'type': 'base',
-                'show': True
-            },
-            'created_time': {
-                'type': 'base',
-                'show': True
-            },
-            'donation_count': {
-                'type': 'base',
-                'show': True
-            },
-            'donation_amount': {
-                'type': 'base',
-                'show': True
-            }
+    id = db.Column('id', db.Integer, primary_key=True)
+    blogpost_id = db.Column('blogpost_id', db.ForeignKey(Blogpost.id), nullable=False)
+    user_id = db.Column('user_id', db.ForeignKey(User.id), nullable=False)
+    body = db.Column('body', db.Text, nullable=False)
+    created_time = db.Column('created_time', db.Float, nullable=False)
+    donation_count = db.Column('donation_count', db.Float, nullable=False, default=0)
+    donation_amount = db.Column('donation_amount', db.Float, nullable=False, default=0)
+
+    blogpost = db.relationship('Blogpost', foreign_keys='Blogpostcomment.blogpost_id', lazy='select')
+    user = db.relationship('User', foreign_keys='Blogpostcomment.user_id', lazy='select')
+
+    _fields = {
+        'id': {
+            'type': 'base',
+            'show': True
+        },
+        'user': {
+            'type': 'model',
+            'show': True
+        },
+        'blogpost': {
+            'type': 'model',
+            'show': False
+        },
+        'body': {
+            'type': 'base',
+            'show': True
+        },
+        'created_time': {
+            'type': 'base',
+            'show': True
+        },
+        'donation_count': {
+            'type': 'base',
+            'show': True
+        },
+        'donation_amount': {
+            'type': 'base',
+            'show': True
         }
-        super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'blogpostcomment'
+    }
 
 
 class Blogpostcommentdonation(BaseModel):
-    blogpostcomment = ForeignKeyField(column_name='blogpostcomment_id', field='id', model=Blogpostcomment, null=False)
-    user = ForeignKeyField(column_name='user_id', field='id', model=User, null=False)
-    amount = DoubleField(null=False)
-    time = DoubleField(null=False)
+    __tablename__ = 'blogpostcommentdonation'
 
-    def __init__(self, **kwargs):
-        kwargs['fields'] = {
-            'user': {
-                'type': 'model',
-                'show': True
-            },
-            'blogpostcomment': {
-                'type': 'model',
-                'show': False
-            },
-            'amount': {
-                'type': 'base',
-                'show': True
-            },
-            'time': {
-                'type': 'base',
-                'show': True
-            }
+    id = db.Column('id', db.Integer, primary_key=True)
+    blogpostcomment_id = db.Column('blogpostcomment_id', db.ForeignKey(Blogpostcomment.id), nullable=False)
+    user_id = db.Column('user_id', db.ForeignKey(User.id), nullable=False)
+    amount = db.Column('amount', db.Float, nullable=False)
+    time = db.Column('time', db.Float, nullable=False)
+
+    user = db.relationship('User', foreign_keys='Blogpostcommentdonation.user_id', lazy='select')
+    blogpostcomment = db.relationship('Blogpostcomment', foreign_keys='Blogpostcommentdonation.blogpostcomment_id', lazy='select')
+
+    _fields = {
+        'user': {
+            'type': 'model',
+            'show': True
+        },
+        'blogpostcomment': {
+            'type': 'model',
+            'show': False
+        },
+        'amount': {
+            'type': 'base',
+            'show': True
+        },
+        'time': {
+            'type': 'base',
+            'show': True
         }
-        super().__init__(**kwargs)
-
-    class Meta:
-        table_name = 'blogpostcommentdonation'
+    }

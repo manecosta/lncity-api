@@ -6,6 +6,8 @@ from typing import Tuple, Union, Optional
 from lncityapi.models import User, Userauthtoken, Userrefreshtoken, Spamblock
 from lncityapi.other.util import random_string
 
+from lncityapi import db
+
 
 # Helper methods
 
@@ -27,8 +29,8 @@ def _new_auth_token() -> str:
 
 def _get_login_spam_block(username: str):
     sb = None
-    for _sb in Spamblock.select().where(Spamblock.key == f'login[username={username}]'):
-        if _sb.expired_time > arrow.get().timestamp:
+    for _sb in Spamblock.query.filter_by(key=f'login[username={username}]'):
+        if _sb.expired_time > arrow.get().timestamp():
             sb = _sb
         else:
             _sb.delete_instance()
@@ -38,23 +40,27 @@ def _get_login_spam_block(username: str):
 def _increment_login_spam_block(username: str):
     sb = _get_login_spam_block(username)
     if sb is None:
-        sb = Spamblock.create(
+        sb = Spamblock(
             count=1,
             key=f'login[username={username}]',
-            expired_time=arrow.get().shift(minutes=sb.count * 10).timestamp
+            expired_time=arrow.get().shift(minutes=10).timestamp()
         )
+
+        db.session.add(sb)
+        db.session.commit()
     else:
         if sb.count <= 5:
             sb.count = sb.count + 1
-        sb.expired_time = arrow.get().shift(minutes=sb.count * 10).timestamp
+        sb.expired_time = arrow.get().shift(minutes=sb.count * 10).timestamp()
 
-        sb.save()
+        db.session.commit()
 
     return sb
 
 
 def _clear_expired_login_spam_block():
-    Spamblock.delete().where(Spamblock.expired_time < arrow.get().timestamp).execute()
+    Spamblock.query.filter(Spamblock.expired_time < arrow.get().timestamp()).delete()
+    db.session.commit()
 
 
 # Login / Register
@@ -126,11 +132,15 @@ def login(login_request: dict) -> Tuple[int, Union[str, dict]]:
 
 
 def register_user() -> dict:
-    _user = User.create(
+    _user = User(
         balance=0,
-        created_time=arrow.get().timestamp,
-        updated_time=arrow.get().timestamp
+        created_time=arrow.get().timestamp(),
+        updated_time=arrow.get().timestamp()
     )
+
+    db.session.add(_user)
+    db.session.commit()
+    db.session.refresh(_user)
 
     _auth_token = generate_auth_token(_user)
     _refresh_token = generate_refresh_token(_user)
@@ -157,8 +167,8 @@ def add_username_and_password(user: User, add_credentials_request: dict) -> Tupl
     user.passhash = _hash_password(_password, _salt)
     user.salt = _salt
 
-    user.updated_time = arrow.get().timestamp
-    user.save()
+    user.updated_time = arrow.get().timestamp()
+    db.session.commit()
 
     delete_user_auth_tokens(user)
     delete_user_refresh_tokens(user)
@@ -176,30 +186,36 @@ def add_username_and_password(user: User, add_credentials_request: dict) -> Tupl
 # Token management
 
 def delete_user_refresh_tokens(user: User):
-    Userrefreshtoken.delete().where(Userrefreshtoken.user == user.id).execute()
+    Userrefreshtoken.query.filter_by(user_id=user.id).delete()
+    db.session.commit()
 
 
 def delete_user_auth_tokens(user: User):
-    Userauthtoken.delete().where(Userauthtoken.user == user.id).execute()
+    Userauthtoken.query.filter_by(user_id=user.id).delete()
+    db.session.commit()
 
 
 def delete_refresh_token(refresh_token: str):
-    Userrefreshtoken.delete().where(Userrefreshtoken.refresh_token == refresh_token).execute()
+    Userrefreshtoken.query.filter_by(refresh_token=refresh_token).delete()
+    db.session.commit()
 
 
 def generate_refresh_token(user: User):
     _refresh_token = _new_refresh_token(user.passhash if user.passhash is not None else random_string())
 
-    _expired_time = arrow.get().shift(days=30).timestamp
+    _expired_time = arrow.get().shift(days=30).timestamp()
     if user.passhash is None:
         # If the user has no passhash we set the refresh token to virtually never expire
-        _expired_time = arrow.get().shift(years=100).timestamp
+        _expired_time = arrow.get().shift(years=100).timestamp()
 
-    Userrefreshtoken.create(
-        user=user.id,
+    _userrefreshtoken = Userrefreshtoken(
+        user_id=user.id,
         refresh_token=_refresh_token,
         expired_time=_expired_time
     )
+
+    db.session.add(_userrefreshtoken)
+    db.session.commit()
 
     return _refresh_token
 
@@ -207,54 +223,53 @@ def generate_refresh_token(user: User):
 def generate_auth_token(user: User):
     _auth_token = _new_auth_token()
 
-    _expired_time = arrow.get().shift(hours=1).timestamp
+    _expired_time = arrow.get().shift(hours=1).timestamp()
 
-    Userauthtoken.create(
-        user=user.id,
+    _userauthtoken = Userauthtoken(
+        user_id=user.id,
         auth_token=_auth_token,
         expired_time=_expired_time
     )
+
+    db.session.add(_userauthtoken)
+    db.session.commit()
 
     return _auth_token
 
 
 def expire_refresh_tokens():
-    Userrefreshtoken.delete().where(Userrefreshtoken.expired_time < arrow.get().timestamp).execute()
+    Userrefreshtoken.query.filter(Userrefreshtoken.expired_time < arrow.get().timestamp()).delete()
+    db.session.commit()
 
 
 def expire_auth_tokens():
-    Userauthtoken.delete().where(Userauthtoken.expired_time < arrow.get().timestamp).execute()
+    Userauthtoken.query.filter(Userauthtoken.expired_time < arrow.get().timestamp()).delete()
+    db.session.commit()
 
 
 # Gets
 
-def get_user_by_refresh_token(refresh_token: str) -> Optional[User]:
-    for urt in Userrefreshtoken.select(Userrefreshtoken, User)\
-            .join(User).where(Userrefreshtoken.refresh_token == refresh_token,
-                              Userrefreshtoken.expired_time > arrow.get().timestamp):
+def get_user_by_refresh_token(refresh_token: str):
+    for urt in Userrefreshtoken.query.join(User, Userrefreshtoken.user_id == User.id)\
+            .filter(Userrefreshtoken.refresh_token == refresh_token)\
+            .filter(Userrefreshtoken.expired_time > arrow.get().timestamp()):
         return urt.user
 
     return None
 
 
-def get_user_by_username(username: str) -> Optional[User]:
-    for u in User.select().where(User.username == username):
-        return u
-
-    return None
+def get_user_by_username(username: str):
+    return User.query.filter_by(username=username).first()
 
 
 def get_user(user_id):
-    for u in User.select().where(User.id == user_id):
-        return u
-
-    return None
+    return User.query.filter_by(id=user_id).first()
 
 
-def get_user_by_auth_token(auth_token: str, add_auth_properties=False) -> Optional[User]:
-    for uat in Userauthtoken.select(Userauthtoken, User)\
-            .join(User).where(Userauthtoken.auth_token == auth_token,
-                              Userauthtoken.expired_time > arrow.get().timestamp):
+def get_user_by_auth_token(auth_token: str, add_auth_properties=False):
+    for uat in Userauthtoken.query.join(User, Userauthtoken.user_id == User.id)\
+            .filter(Userauthtoken.auth_token == auth_token)\
+            .filter(Userauthtoken.expired_time > arrow.get().timestamp()):
         _user = uat.user
 
         if add_auth_properties:

@@ -2,9 +2,10 @@ flask
 flask-cors
 flask-login
 requests
-peewee
+flask_sqlalchemy
+SQLAlchemy-JSONField
 pymysql
 cryptography
 arrow
 marshmallow==3.0.0rc5
-autobahn[asyncio]==19.3.3
+# autobahn[asyncio]>=20.12.3

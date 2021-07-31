@@ -3,10 +3,16 @@ from flask import Flask
 from flask_cors import CORS
 from flask_login import LoginManager
 
+from lncityapi.other.common import db, db_connect_string
+
 # Initialize app
 
 app = Flask(__name__)
 CORS(app)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_connect_string
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 loginManager = LoginManager()
 loginManager.init_app(app)

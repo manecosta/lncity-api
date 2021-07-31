@@ -1,8 +1,6 @@
 
 from time import time
 
-from peewee import JOIN
-
 from lncityapi.models import Notification, User
 
 
@@ -24,8 +22,8 @@ def see_notifications(user):
 
 def get_notifications_count(user):
     return {
-        'total': Notification.select().where(Notification.user == user.id).count(),
-        'unseen': Notification.select().where(Notification.user == user.id, Notification.seen == 0).count()
+        'total': Notification.query.filter_by(user_id=user.id).count(),
+        'unseen': Notification.query.filter_by(user_id=user.id, seen=0).count()
     }
 
 

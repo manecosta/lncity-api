@@ -11,9 +11,11 @@ from lncityapi.controllers.notificationscontroller import add_notification
 from lncityapi.models import User, Deposit, Withdrawal
 from lncityapi.services import lnd
 
+from lncityapi import db
+
 
 def expire_deposit_invoices():
-    Deposit.delete().where(Deposit.expired_time > arrow.get().timestamp).execute()
+    Deposit.delete().where(Deposit.expired_time > arrow.get().timestamp()).execute()
 
 
 def generate_deposit_invoice_for_user(user: User, amount: int) -> Tuple[int, Union[str, dict]]:
@@ -24,7 +26,7 @@ def generate_deposit_invoice_for_user(user: User, amount: int) -> Tuple[int, Uni
 
     r_hash = invoice.get('r_hash')
 
-    created_time = arrow.get().timestamp
+    created_time = arrow.get().timestamp()
     expired_time = created_time + 2 * conf.get('INVOICE_TIMEOUT')
 
     Deposit.create(
@@ -65,7 +67,7 @@ def try_update_balance_with_deposit_invoice(r_hash: str) -> bool:
 
 def verify_pending_deposits_for_user(user: User) -> User:
     pending_deposits = []
-    for pd in Deposit.select().where(Deposit.user == user.id, Deposit.settled == 0):
+    for pd in Deposit.query.filter_by(user_id=user.id, settled=0):
         pending_deposits.append(pd)
 
     if not pending_deposits:
@@ -78,8 +80,7 @@ def verify_pending_deposits_for_user(user: User) -> User:
             balance_updated = balance_updated or try_update_balance_with_deposit_invoice(pd.r_hash)
 
     if balance_updated:
-        for u in User.select().where(User.id == user.id):
-            return u
+        db.session.refresh(user)
 
     return user
 
@@ -107,7 +108,7 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
     withdrawal = Withdrawal.create(
         user=user.id,
         amount=amount,
-        created_time=arrow.get().timestamp,
+        created_time=arrow.get().timestamp(),
         settled=0
     )
 
@@ -155,10 +156,16 @@ def withdraw_balance_for_user(user: User, payment_request: str) -> Tuple[int, Un
 
 def add_user_balance(user, amount):
     if amount >= 0:
-        User.update(balance=User.balance + amount).where(User.id == user.id).execute()
+        user.balance += amount
+        db.session.commit()
+        db.session.refresh(user)
         return True
     else:
-        lines_changed = User.update(balance=User.balance + amount)\
-            .where(User.id == user.id, User.balance >= -amount).execute()
+        db_user = User.query.filter(User.id == user.id, User.balance >= -amount).with_for_update().first()
+        if db_user is not None:
+            db_user.balance += amount
 
-        return lines_changed > 0
+        db.session.commit()
+        db.session.refresh(user)
+
+        return db_user is not None

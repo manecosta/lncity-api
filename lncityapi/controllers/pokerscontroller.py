@@ -3,6 +3,8 @@ from random import sample
 from time import time
 from uuid import uuid4
 
+from lncityapi import db
+
 if __name__ != '__main__':
     from lncityapi.models import Pokerhand
 
@@ -294,7 +296,7 @@ def new_poker_hand(user, multiplier):
     prize_info = None
     recovered = False
 
-    for ph in Pokerhand.select().where(Pokerhand.user == user.id, Pokerhand.settled == 0):
+    for ph in Pokerhand.query.filter_by(user_id=user.id, settled=0):
         identifier = ph.identifier
         hand_cards = ph.info.get('front')
         multiplier = ph.multiplier
@@ -306,17 +308,20 @@ def new_poker_hand(user, multiplier):
 
         identifier = uuid4().hex
 
-        poker_hand = Pokerhand.create(
+        poker_hand = Pokerhand(
             identifier=identifier,
-            user=user.id,
+            user_id=user.id,
             info=game_cards,
             settled=0,
             multiplier=multiplier,
             time=time()
         )
 
+        db.session.add(poker_hand)
+        db.session.commit()
+
         # Checking if two hands were added in the meantime
-        user_unsettled_hands_count = Pokerhand.select().where(Pokerhand.user == user.id, Pokerhand.settled == 0).count()
+        user_unsettled_hands_count = Pokerhand.query.filter_by(user_id=user.id, settled=0).count()
 
         if user_unsettled_hands_count > 1:
             poker_hand.delete_instance()
@@ -331,12 +336,7 @@ def new_poker_hand(user, multiplier):
 
 def get_pocker_hand(identifier, user):
 
-    ph_query = (
-        Pokerhand.select()
-            .where(Pokerhand.identifier == identifier, Pokerhand.user == user.id, Pokerhand.settled == 0)
-    )
-
-    for ph in ph_query:
+    for ph in Pokerhand.query.filter_by(identifier=identifier,user_id=user.id, settled=0):
         return ph
 
     return None
@@ -361,9 +361,13 @@ def play_poker_hand(poker_hand, hold_indexes):
 
 
 def settle_poker_hand(poker_hand):
-    lines_changed = Pokerhand.update(settled=1).where(Pokerhand.id == poker_hand.id, Pokerhand.settled == 0).execute()
+    db_poker_hand = Pokerhand.query.filter_by(id=poker_hand.id, settled=0).with_for_update().first()
+    if db_poker_hand is not None:
+        db_poker_hand.settled = 1
+    
+    db.session.commit()
 
-    return lines_changed != 0
+    return db_poker_hand is not None
 
 
 if __name__ == '__main__':

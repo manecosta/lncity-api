@@ -7,7 +7,6 @@ from werkzeug.exceptions import HTTPException
 
 from lncityapi import app, loginManager
 from lncityapi.controllers.userscontroller import get_user_by_auth_token
-from lncityapi.other.common import lncity_db
 
 from conf import conf
 
@@ -20,16 +19,12 @@ def load_user_from_request_aux(request):
 
 @app.before_request
 def before_request():
-    lncity_db.connect()
-
     if request.method == 'POST' and request.headers.get('Content-Type') != 'application/json':
         abort(415, 'Unsupported Content Type')
 
 
 @app.after_request
 def after_request(response):
-    lncity_db.close()
-
     if response.status == '200 OK':
         if response.headers.get('Content-Type', {}) == 'text/html; charset=utf-8':
             response.headers['Content-Type'] = 'application/json'
